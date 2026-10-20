@@ -18,7 +18,16 @@ const SERIES = [
   ['All external debt (estimate)', '1825–1915', 'Henochsberg Fig. 14, digitized from the PDF’s vector path (±1M francs, ±1 year). Includes the indemnity and the 1825, 1875, 1896 and 1910 loans.', ['henochsberg']],
   ['Gross public debt (US $)', '1915–1927', 'Receivership Table 52, Sept. 30 each fiscal year; gourdes ÷ 5. Includes internal debt and uncovered currency. No GDP to compare.', ['receiver_1927']],
   ['External debt stocks, % of GDP', `${S.modernFirstYear}–${S.modernLastYear}`, 'World Bank DT.DOD.DECT.CD ÷ NY.GDP.MKTP.CD (current US $). Public and private, including IMF credit.', ['wb_wdi']],
+  ['Creditor: multilateral banks', '1970–2024', 'IDS DT.DOD.MLAT.CD (public and publicly guaranteed debt to multilateral lenders, excluding the IMF), counterpart area World (WLD).', ['wb_ids']],
+  ['Creditor: IMF', '1970–2024', 'IDS DT.DOD.DIMF.CD (use of IMF credit, including SDR allocations), World.', ['wb_ids']],
+  ['Creditor: Venezuela (PetroCaribe)', '1970–2024', 'IDS DT.DOD.BLAT.CD with counterpart area 463 (Venezuela). Missing years count as zero.', ['wb_ids']],
+  ['Creditor: other governments', '1970–2024', 'IDS DT.DOD.BLAT.CD (all bilateral, World) minus the Venezuela series.', ['wb_ids']],
+  ['Creditor: private and short-term', '1970–2024', 'IDS DT.DOD.PRVT.CD (PPG private) + DT.DOD.DPNG.CD (private nonguaranteed) + DT.DOD.DSTC.CD (short-term).', ['wb_ids']],
+  ['Payment categories', '1826–1888', 'NYT columns: PAYMENTS-INDEMNITY-FRANCS (indemnity), PAYMENTS-1825-LOAN-FRANCS (loan principal and interest together; the file does not split them) and LATE-FEES.', ['nyt_data', 'nyt_readme']],
 ];
+const P = S.payByCategory;
+const PT = P.indemnity + P.loan + P.lateFees;
+const CP = S.credPeaks;
 
 function Sources() {
   return (
@@ -41,6 +50,9 @@ function Sources() {
         <li>The last double-debt payment was in <b>1888</b>; the 1922 US loans were paid off in <b>1947</b>. These are different debts. <Cites ids={['nyt_readme', 'imf_1950']} /></li>
         <li>The NYT’s estimate of lost economic growth: <b>{dollars(F.lost_growth_low_usd.value)} to {dollars(F.lost_growth_high_usd.value)}</b>. <Cite id="nyt_lost_growth" /></li>
         <li>Aristide’s 2003 demand: <b>$21,685,135,571.48</b> (≈{dollars(F.aristide_2003_usd.value)}), which his government said was today’s value of the 90 million francs. <Cite id="latimes_2003" /></li>
+        <li>Of the ≈{francs(PT)} paid, <b>{francs(P.indemnity)}</b> ({pct((P.indemnity / PT) * 100)}) went to the indemnity, <b>{francs(P.loan)}</b> to the 1825 loan and <b>{francs(P.lateFees)}</b> to late fees (first recorded in {S.lateFeesFirstYear}). <Cite id="nyt_data" /></li>
+        <li>Since 1970, Haiti’s external debt peaked at <b>{pct(S.modernPeakPct.pct)} of GDP</b> in {S.modernPeakPct.year}, and at <b>${(S.modernPeakUsd.usdM / 1000).toFixed(2)} billion</b> in {S.modernPeakUsd.year}. <Cites ids={['wb_ids', 'wb_wdi']} /></li>
+        <li>Venezuela (PetroCaribe) held more than half of Haiti’s external debt in <b>{S.venOverHalf.n} years</b> ({S.venOverHalf.from}–{S.venOverHalf.to}), peaking at <b>{pct(CP.ven.share)}</b> in {CP.ven.year}. Highest shares for the other groups: multilateral banks {pct(CP.mlt.share)} ({CP.mlt.year}), IMF {pct(CP.imf.share)} ({CP.imf.year}), other governments {pct(CP.oth.share)} ({CP.oth.year}), private and short-term {pct(CP.prv.share)} ({CP.prv.year}). <Cite id="wb_ids" /></li>
         <li>150 million francs in 2021 dollars, using the NYT’s formula and 1825 rates: <b>≈{dollars(S.indemnity150InUsd2021)}</b>. This one is our calculation, not a published figure. <Cite id="nyt_data" /></li>
       </ul>
 
@@ -61,9 +73,12 @@ function Sources() {
       <p>“Paid that year” is what Haiti paid from its own revenue. The 24 million francs of the first installment paid with the 1825 loan are counted through the loan repayments, as in the NYT data, so 1825 shows no payment.</p>
       <p>Dollar conversions follow the NYT: amount ÷ exchange rate × (2021 US CPI ÷ that year’s US CPI). CPI is the Minneapolis Fed historical series, as included in the NYT file.</p>
 
+      <p>The five creditor groups add up exactly to IDS total external debt (DT.DOD.DECT.CD), which matches the WDI figure used for “% of GDP”; the build script fails if they ever differ. “Breakdown (100%)” shows each group’s share of the checked groups, so unchecking a group re-normalizes the rest to 100%.</p>
+      <p>“Amount owed” over the full span puts two units on one chart: millions of francs (left axis, 1825–1915) and millions of current US dollars (right axis, 1970–2024). They are not converted into each other, and the line never crosses the 1916–1969 gap.</p>
+
       <h2 id="gaps">Gaps and caveats</h2>
       <ul>
-        <li><b>No GDP for 1916–1969.</b> Henochsberg’s estimates stop in 1915 and the World Bank’s start in 1960 (its debt data in 1970). That is why no ratio is shown for the US-loan years, and why the modern chart is separate.</li>
+        <li><b>No GDP for 1916–1969.</b> Henochsberg’s estimates stop in 1915 and the World Bank’s start in 1960 (its debt data in 1970). That is why no ratio is shown for the US-loan years, and why the chart leaves that span shaded and empty.</li>
         <li><b>No annual debt series for 1928–1947.</b> The receivership’s annual reports for these years exist (HathiTrust) but have not been transcribed. Known points: 1922–24 bond issues of {dollars(F.bonds_1922_24_usd.value)}; the 1922 Series A was {dollars(F.loan_1922_series_a_usd.value)}; foreign debt repaid by 1947. <Cites ids={['imf_1950', 'frus_1922']} /></li>
         <li><b>No payment series after 1888.</b> Haiti kept paying the 1875, 1896 and 1910 loans and later the US loans, but no year-by-year payment series comparable to the NYT’s is available here.</li>
         <li><b>Digitized estimate.</b> The “all external debt” line was read off a chart in Henochsberg’s thesis, accurate to about ±1 million francs and ±1 year.</li>
@@ -71,6 +86,7 @@ function Sources() {
         <li><b>Modern series differs in definition.</b> World Bank total external debt includes private debt and IMF credit, so it is not the same thing as the double debt.</li>
         <li><b>The 2024 drop in the modern series</b> (external debt falls from about $3.2 billion in 2023 to about $0.9 billion in 2024) coincides with the January 2024 PetroCaribe settlement, but we have not verified how much of the drop it explains. <Cites ids={['wb_wdi', 'imf_2024']} /></li>
         <li><b>Lost growth is a model estimate</b>, with a wide range, not a measured amount.</li>
+        <li><b>No creditor breakdown before 1970.</b> The 19th-century breakdown is by what each payment went to (indemnity, loan, late fees), not by creditor.</li>
       </ul>
 
       <h2 id="registry">Source list</h2>
@@ -89,7 +105,10 @@ function Sources() {
         <a href="data/haiti-debt-explorer.json" download>haiti-debt-explorer.json</a> (everything on this site, with sources).
         NYT-derived data is for non-commercial use with credit to The New York Times.
       </p>
-      <p className="muted">Data built {new Date(data.meta.builtAt).toLocaleDateString('en-US', { dateStyle: 'long' })}. World Bank data last updated {data.meta.worldBankLastUpdated}.</p>
+      <p className="muted">Data built {new Date(data.meta.builtAt).toLocaleDateString('en-US', { dateStyle: 'long' })}. World Bank WDI last updated {data.meta.worldBankLastUpdated}; IDS last updated {data.meta.idsLastUpdated}.</p>
+
+      <h2 id="design">Design</h2>
+      <p>Typefaces: IBM Plex Sans Condensed and IBM Plex Sans (SIL Open Font License). Colors and type follow the Gourmet Data chart style.</p>
     </article>
   );
 }

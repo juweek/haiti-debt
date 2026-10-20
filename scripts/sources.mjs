@@ -72,6 +72,12 @@ export const SOURCES = {
     short: 'World Bank',
     url: 'https://api.worldbank.org/v2/country/HTI/indicator/DT.DOD.DECT.CD?format=json&per_page=100',
   },
+  wb_ids: {
+    title: 'World Bank, International Debt Statistics (IDS, source 6), Haiti: external debt stocks by creditor (DT.DOD.DECT.CD, DT.DOD.DIMF.CD, DT.DOD.MLAT.CD, DT.DOD.BLAT.CD incl. counterpart 463 = Venezuela, DT.DOD.PRVT.CD, DT.DOD.DPNG.CD, DT.DOD.DSTC.CD)',
+    short: 'World Bank IDS',
+    url: 'https://datatopics.worldbank.org/debt/ids/country/HTI',
+    note: 'API: https://api.worldbank.org/v2/sources/6/country/HTI/series/{series}/counterpart-area/{WLD|463}/time/all?format=json. License CC BY 4.0.',
+  },
   wb_hipc_2009: {
     title: 'World Bank press release, Haiti HIPC completion point (June 30, 2009)',
     short: 'World Bank 2009',

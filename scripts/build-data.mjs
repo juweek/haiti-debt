@@ -25,6 +25,23 @@ const REMOTE = {
   wbDebt: { url: 'https://api.worldbank.org/v2/country/HTI/indicator/DT.DOD.DECT.CD?format=json&per_page=100', path: 'worldbank/wb_DT.DOD.DECT.CD.json' },
   wbGdp: { url: 'https://api.worldbank.org/v2/country/HTI/indicator/NY.GDP.MKTP.CD?format=json&per_page=100', path: 'worldbank/wb_NY.GDP.MKTP.CD.json' },
 };
+// World Bank IDS creditor breakdown (source 6). key -> [series, counterpart area]
+const IDS = {
+  dect: ['DT.DOD.DECT.CD', 'WLD'], // total external debt stocks
+  dimf: ['DT.DOD.DIMF.CD', 'WLD'], // use of IMF credit + SDR allocations
+  mlat: ['DT.DOD.MLAT.CD', 'WLD'], // PPG multilateral
+  blat: ['DT.DOD.BLAT.CD', 'WLD'], // PPG bilateral, all governments
+  blat_ven: ['DT.DOD.BLAT.CD', '463'], // PPG bilateral owed to Venezuela
+  prvt: ['DT.DOD.PRVT.CD', 'WLD'], // PPG private creditors
+  dpng: ['DT.DOD.DPNG.CD', 'WLD'], // private nonguaranteed
+  dstc: ['DT.DOD.DSTC.CD', 'WLD'], // short-term
+};
+for (const [k, [series, area]] of Object.entries(IDS)) {
+  REMOTE[`ids_${k}`] = {
+    url: `https://api.worldbank.org/v2/sources/6/country/HTI/series/${series}/counterpart-area/${area}/time/all?format=json&per_page=200`,
+    path: `worldbank/ids/ids_${k}.json`,
+  };
+}
 
 async function refresh(key) {
   const { url, path } = REMOTE[key];
@@ -33,7 +50,10 @@ async function refresh(key) {
     const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    if (key !== 'nyt') JSON.parse(text); // validate before overwriting
+    if (key !== 'nyt') {
+      const j = JSON.parse(text); // validate before overwriting
+      if (key.startsWith('ids_') && !j?.source?.data?.length) throw new Error('no IDS data in response');
+    }
     if (text.length < 500) throw new Error('response too short');
     writeFileSync(join(RAW, path), text);
     console.log(`  ✓ downloaded ${key} from ${url}`);
@@ -76,7 +96,8 @@ function assertClose(name, got, want, tol) {
 
 async function main() {
   console.log('Refreshing raw sources…');
-  const status = { nyt: await refresh('nyt'), wbDebt: await refresh('wbDebt'), wbGdp: await refresh('wbGdp') };
+  const status = {};
+  for (const key of Object.keys(REMOTE)) status[key] = await refresh(key);
 
   // ---- NYT double debt, 1825–1915 (GDP to 1915; payments to 1888)
   const nyt = parseCSV(readFileSync(join(RAW, REMOTE.nyt.path), 'utf8'));
@@ -124,9 +145,36 @@ async function main() {
   const wb = (p) => new Map(JSON.parse(readFileSync(join(RAW, p), 'utf8'))[1].filter((d) => d.value != null).map((d) => [Number(d.date), d.value]));
   const wbMeta = JSON.parse(readFileSync(join(RAW, REMOTE.wbDebt.path), 'utf8'))[0];
   const debt = wb(REMOTE.wbDebt.path), gdpWb = wb(REMOTE.wbGdp.path);
-  const modern = [...debt.keys()].filter((y) => gdpWb.has(y)).sort((a, b) => a - b).map((y) => ({
-    year: y, debtUsdM: round(debt.get(y) / 1e6, 1), gdpUsdM: round(gdpWb.get(y) / 1e6, 1), pct: round((debt.get(y) / gdpWb.get(y)) * 100, 1),
-  }));
+  // IDS creditor breakdown: the five groups add up to DT.DOD.DECT.CD (checked below).
+  const idsRead = (k) => {
+    const j = JSON.parse(readFileSync(join(RAW, REMOTE[`ids_${k}`].path), 'utf8'));
+    const m = new Map();
+    for (const r of j.source.data) {
+      const y = Number(r.variable.find((v) => v.concept === 'Time').id.slice(2));
+      m.set(y, r.value);
+    }
+    return { m, lastupdated: j.lastupdated };
+  };
+  const I = Object.fromEntries(Object.keys(IDS).map((k) => [k, idsRead(k)]));
+  const z = (k, y) => (I[k].m.get(y) ?? 0) / 1e6;
+  const modern = [...debt.keys()].filter((y) => gdpWb.has(y) && y >= 1970).sort((a, b) => a - b).map((y) => {
+    const cred = {
+      mlt: z('mlat', y),
+      imf: z('dimf', y),
+      ven: z('blat_ven', y),
+      oth: z('blat', y) - z('blat_ven', y),
+      prv: z('prvt', y) + z('dpng', y) + z('dstc', y),
+    };
+    const idsTotal = z('dect', y);
+    const sum = Object.values(cred).reduce((a, b) => a + b, 0);
+    if (Math.abs(sum - idsTotal) > 0.05) throw new Error(`IDS creditor groups (${sum}) don't add up to DT.DOD.DECT.CD (${idsTotal}) in ${y}`);
+    if (Math.abs(idsTotal - debt.get(y) / 1e6) > 0.5) console.warn(`  ! ${y}: IDS total ${idsTotal} vs WDI ${debt.get(y) / 1e6}`);
+    return {
+      year: y, debtUsdM: round(debt.get(y) / 1e6, 1), gdpUsdM: round(gdpWb.get(y) / 1e6, 1), pct: round((debt.get(y) / gdpWb.get(y)) * 100, 1),
+      cred: Object.fromEntries(Object.entries(cred).map(([k, v]) => [k, round(v, 3)])),
+      venReported: I.blat_ven.m.get(y) != null,
+    };
+  });
 
   // ---- Stats (each traces to nyt_data unless noted)
   const pay = years.filter((d) => d.year <= 1888);
@@ -150,6 +198,27 @@ async function main() {
     indemnity150InUsd2021: round((FACTS.indemnity_1825_francs.value / num(y1825['EXCHANGE-RATE-FRANC-TO-USD'])) * (cpi2021 / num(y1825['CONSUMER-PRICE-INDEX-USD'])), 0),
     modernFirstYear: modern[0]?.year, modernLastYear: modern.at(-1)?.year,
   };
+  // Creditor shares (of total external debt): peak share and year for each group.
+  stats.credPeaks = Object.fromEntries(['mlt', 'imf', 'ven', 'oth', 'prv'].map((k) => {
+    const best = modern.reduce((a, d) => { const sh = (d.cred[k] / d.debtUsdM) * 100; return sh > a.share ? { share: sh, year: d.year } : a; }, { share: -1, year: null });
+    return [k, { share: round(best.share, 1), year: best.year }];
+  }));
+  const venHalf = modern.filter((d) => d.cred.ven / d.debtUsdM > 0.5).map((d) => d.year);
+  stats.venOverHalf = { from: venHalf[0], to: venHalf.at(-1), n: venHalf.length };
+  const modernPeak = modern.reduce((a, d) => (d.pct > a.pct ? d : a));
+  stats.modernPeakPct = { pct: modernPeak.pct, year: modernPeak.year };
+  const modernPeakUsd = modern.reduce((a, d) => (d.debtUsdM > a.debtUsdM ? d : a));
+  stats.modernPeakUsd = { usdM: modernPeakUsd.debtUsdM, year: modernPeakUsd.year };
+  const henPeak = years.filter((d) => d.extDebtPctGdp != null).reduce((a, d) => (d.extDebtPctGdp > a.extDebtPctGdp ? d : a));
+  stats.henPeakPct = { pct: henPeak.extDebtPctGdp, year: henPeak.year };
+  stats.idsLastUpdated = I.dect.lastupdated;
+  // What the payments went to, 1826–1888 (NYT categories)
+  const sumOf = (k) => round(pay.reduce((a, d) => a + (d[k] || 0), 0), 0);
+  stats.payByCategory = { indemnity: sumOf('payIndemnityFr'), loan: sumOf('payLoanFr'), lateFees: sumOf('payLateFeesFr') };
+  const lf = pay.filter((d) => d.payLateFeesFr > 0);
+  stats.lateFeesFirstYear = lf[0]?.year ?? null;
+  const pk = paying.reduce((a, b) => (b.payFr > a.payFr ? b : a));
+  stats.peakPayFr = { francs: pk.payFr, year: pk.year };
 
   console.log('Checking against fact-checked figures (explainer.md)…');
   assertClose('total paid, million francs', stats.totalPaidFr / 1e6, 112, 1);
@@ -159,6 +228,9 @@ async function main() {
   assertClose('median payment % GDP (paying years)', stats.medianPayPctPayingYears, 2.5, 0.1);
   assertClose('owed % GDP 1826', stats.owedPct1826, 300, 10);
   assertClose('last payment year', stats.lastPayYear, 1888, 0);
+  // Figures quoted on the reference chart "more than half owed to Venezuela" (IDS, Dec 2025 update)
+  assertClose('Venezuela peak share %', stats.credPeaks.ven.share, 78, 1);
+  assertClose('Venezuela over 50% (years)', stats.venOverHalf.n, 13, 0);
 
   const out = {
     meta: {
@@ -166,6 +238,7 @@ async function main() {
       builtAt: new Date().toISOString(),
       rawStatus: status,
       worldBankLastUpdated: wbMeta?.lastupdated ?? null,
+      idsLastUpdated: stats.idsLastUpdated,
       license: 'NYT data: non-commercial use with credit to The New York Times (data/raw/nyt/LICENSE).',
     },
     sources: SOURCES, facts: FACTS, events: EVENTS, modernEvents: MODERN_EVENTS,

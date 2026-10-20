@@ -5,7 +5,7 @@ function Header({ page, lang, setLang }) {
   const t = useT();
   return (
     <header className="site-header">
-      <a className="brand" href="index.html"><span className="flag" aria-hidden="true" />{t('kicker')}</a>
+      <a className="brand" href="index.html">{t('kicker')}</a>
       <nav aria-label="Pages">
         <a href="index.html" aria-current={page === 'explorer' ? 'page' : undefined}>{t('navExplorer')}</a>
         <a href="sources.html" aria-current={page === 'sources' ? 'page' : undefined}>{t('navSources')}</a>
@@ -47,8 +47,11 @@ function Footer() {
   const t = useT();
   return (
     <footer className="site-footer">
-      <p>{t('footer')} <a href="sources.html">{t('navSources')}</a>.</p>
-      <p className="muted">The NYT data is used under its non-commercial license, with credit to The New York Times.</p>
+      <div>
+        <p>{t('footer')} <a href="sources.html">{t('navSources')}</a>.</p>
+        <p>The NYT data is used under its non-commercial license, with credit to The New York Times. World Bank data: CC BY 4.0.</p>
+      </div>
+      <img className="logo" src="img/gd-lockup-stacked.png" alt="Gourmet Data" width="645" height="216" loading="lazy" />
     </footer>
   );
 }

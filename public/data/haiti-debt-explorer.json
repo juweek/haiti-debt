@@ -1,13 +1,22 @@
 {
  "meta": {
   "title": "Haiti Independence Debt explorer",
-  "builtAt": "2026-10-20T18:54:05.590Z",
+  "builtAt": "2026-10-20T19:33:37.042Z",
   "rawStatus": {
    "nyt": "downloaded",
    "wbDebt": "downloaded",
-   "wbGdp": "downloaded"
+   "wbGdp": "downloaded",
+   "ids_dect": "downloaded",
+   "ids_dimf": "downloaded",
+   "ids_mlat": "downloaded",
+   "ids_blat": "downloaded",
+   "ids_blat_ven": "downloaded",
+   "ids_prvt": "downloaded",
+   "ids_dpng": "downloaded",
+   "ids_dstc": "downloaded"
   },
   "worldBankLastUpdated": "2026-10-08",
+  "idsLastUpdated": "2025-12-03",
   "license": "NYT data: non-commercial use with credit to The New York Times (data/raw/nyt/LICENSE)."
  },
  "sources": {
@@ -78,6 +87,12 @@
    "title": "World Bank WDI / International Debt Statistics, Haiti: DT.DOD.DECT.CD and NY.GDP.MKTP.CD",
    "short": "World Bank",
    "url": "https://api.worldbank.org/v2/country/HTI/indicator/DT.DOD.DECT.CD?format=json&per_page=100"
+  },
+  "wb_ids": {
+   "title": "World Bank, International Debt Statistics (IDS, source 6), Haiti: external debt stocks by creditor (DT.DOD.DECT.CD, DT.DOD.DIMF.CD, DT.DOD.MLAT.CD, DT.DOD.BLAT.CD incl. counterpart 463 = Venezuela, DT.DOD.PRVT.CD, DT.DOD.DPNG.CD, DT.DOD.DSTC.CD)",
+   "short": "World Bank IDS",
+   "url": "https://datatopics.worldbank.org/debt/ids/country/HTI",
+   "note": "API: https://api.worldbank.org/v2/sources/6/country/HTI/series/{series}/counterpart-area/{WLD|463}/time/all?format=json. License CC BY 4.0."
   },
   "wb_hipc_2009": {
    "title": "World Bank press release, Haiti HIPC completion point (June 30, 2009)",
@@ -347,7 +362,57 @@
   "cpi2021": 814.3,
   "indemnity150InUsd2021": 661602210,
   "modernFirstYear": 1970,
-  "modernLastYear": 2024
+  "modernLastYear": 2024,
+  "credPeaks": {
+   "mlt": {
+    "share": 79.9,
+    "year": 2005
+   },
+   "imf": {
+    "share": 59.2,
+    "year": 2024
+   },
+   "ven": {
+    "share": 77.9,
+    "year": 2017
+   },
+   "oth": {
+    "share": 83.3,
+    "year": 1974
+   },
+   "prv": {
+    "share": 27.1,
+    "year": 1982
+   }
+  },
+  "venOverHalf": {
+   "from": 2011,
+   "to": 2023,
+   "n": 13
+  },
+  "modernPeakPct": {
+   "pct": 45,
+   "year": 1993
+  },
+  "modernPeakUsd": {
+   "usdM": 3156.5,
+   "year": 2023
+  },
+  "henPeakPct": {
+   "pct": 303.1,
+   "year": 1826
+  },
+  "idsLastUpdated": "2025-12-03",
+  "payByCategory": {
+   "indemnity": 66000000,
+   "loan": 41124111,
+   "lateFees": 5199365
+  },
+  "lateFeesFirstYear": 1873,
+  "peakPayFr": {
+   "francs": 6436113.33,
+   "year": 1840
+  }
  },
  "years": [
   {
@@ -2324,331 +2389,771 @@
    "year": 1970,
    "debtUsdM": 52.2,
    "gdpUsdM": 331.2,
-   "pct": 15.8
+   "pct": 15.8,
+   "cred": {
+    "mlt": 4.577,
+    "imf": 2.89,
+    "ven": 0,
+    "oth": 33.995,
+    "prv": 10.702
+   },
+   "venReported": false
   },
   {
    "year": 1971,
    "debtUsdM": 50,
    "gdpUsdM": 362.8,
-   "pct": 13.8
+   "pct": 13.8,
+   "cred": {
+    "mlt": 5.412,
+    "imf": 1.2,
+    "ven": 0,
+    "oth": 33.17,
+    "prv": 10.255
+   },
+   "venReported": false
   },
   {
    "year": 1972,
    "debtUsdM": 53.7,
    "gdpUsdM": 372,
-   "pct": 14.4
+   "pct": 14.4,
+   "cred": {
+    "mlt": 5.576,
+    "imf": 0,
+    "ven": 0,
+    "oth": 35.412,
+    "prv": 12.708
+   },
+   "venReported": false
   },
   {
    "year": 1973,
    "debtUsdM": 51.3,
    "gdpUsdM": 466.8,
-   "pct": 11
+   "pct": 11,
+   "cred": {
+    "mlt": 5.717,
+    "imf": 0,
+    "ven": 0,
+    "oth": 35.031,
+    "prv": 10.559
+   },
+   "venReported": false
   },
   {
    "year": 1974,
    "debtUsdM": 120.4,
    "gdpUsdM": 565.4,
-   "pct": 21.3
+   "pct": 21.3,
+   "cred": {
+    "mlt": 6.124,
+    "imf": 3.739,
+    "ven": 0,
+    "oth": 100.253,
+    "prv": 10.304
+   },
+   "venReported": false
   },
   {
    "year": 1975,
    "debtUsdM": 148.4,
    "gdpUsdM": 681.4,
-   "pct": 21.8
+   "pct": 21.8,
+   "cred": {
+    "mlt": 22.826,
+    "imf": 12.982,
+    "ven": 0,
+    "oth": 102.772,
+    "prv": 9.847
+   },
+   "venReported": false
   },
   {
    "year": 1976,
    "debtUsdM": 181.5,
    "gdpUsdM": 879,
-   "pct": 20.6
+   "pct": 20.6,
+   "cred": {
+    "mlt": 50.058,
+    "imf": 14.498,
+    "ven": 0,
+    "oth": 104.798,
+    "prv": 12.102
+   },
+   "venReported": false
   },
   {
    "year": 1977,
    "debtUsdM": 235,
    "gdpUsdM": 947,
-   "pct": 24.8
+   "pct": 24.8,
+   "cred": {
+    "mlt": 88.676,
+    "imf": 12.267,
+    "ven": 0,
+    "oth": 111.69,
+    "prv": 22.41
+   },
+   "venReported": false
   },
   {
    "year": 1978,
    "debtUsdM": 281.8,
    "gdpUsdM": 974.2,
-   "pct": 28.9
+   "pct": 28.9,
+   "cred": {
+    "mlt": 118.156,
+    "imf": 20.375,
+    "ven": 0,
+    "oth": 125.026,
+    "prv": 18.256
+   },
+   "venReported": false
   },
   {
    "year": 1979,
    "debtUsdM": 334.7,
    "gdpUsdM": 1080.6,
-   "pct": 31
+   "pct": 31,
+   "cred": {
+    "mlt": 137.578,
+    "imf": 24.573,
+    "ven": 0,
+    "oth": 137.352,
+    "prv": 35.165
+   },
+   "venReported": false
   },
   {
    "year": 1980,
    "debtUsdM": 382.7,
    "gdpUsdM": 1383.8,
-   "pct": 27.7
+   "pct": 27.7,
+   "cred": {
+    "mlt": 161.32,
+    "imf": 46.175,
+    "ven": 0,
+    "oth": 137.669,
+    "prv": 37.492
+   },
+   "venReported": false
   },
   {
    "year": 1981,
    "debtUsdM": 500.1,
    "gdpUsdM": 1479.4,
-   "pct": 33.8
+   "pct": 33.8,
+   "cred": {
+    "mlt": 192.706,
+    "imf": 58.453,
+    "ven": 5.5,
+    "oth": 136.775,
+    "prv": 106.657
+   },
+   "venReported": true
   },
   {
    "year": 1982,
    "debtUsdM": 609.9,
    "gdpUsdM": 1474.2,
-   "pct": 41.4
+   "pct": 41.4,
+   "cred": {
+    "mlt": 217.712,
+    "imf": 67.203,
+    "ven": 9.134,
+    "oth": 150.553,
+    "prv": 165.269
+   },
+   "venReported": true
   },
   {
    "year": 1983,
    "debtUsdM": 644.5,
    "gdpUsdM": 1623.6,
-   "pct": 39.7
+   "pct": 39.7,
+   "cred": {
+    "mlt": 256.407,
+    "imf": 94.453,
+    "ven": 9.133,
+    "oth": 148.27,
+    "prv": 136.216
+   },
+   "venReported": true
   },
   {
    "year": 1984,
    "debtUsdM": 731.6,
    "gdpUsdM": 1816.2,
-   "pct": 40.3
+   "pct": 40.3,
+   "cred": {
+    "mlt": 298.22,
+    "imf": 100.742,
+    "ven": 8.322,
+    "oth": 165.037,
+    "prv": 159.247
+   },
+   "venReported": true
   },
   {
    "year": 1985,
    "debtUsdM": 782.8,
    "gdpUsdM": 2009.4,
-   "pct": 39
+   "pct": 39,
+   "cred": {
+    "mlt": 335.602,
+    "imf": 95.846,
+    "ven": 5.8,
+    "oth": 178.907,
+    "prv": 166.63
+   },
+   "venReported": true
   },
   {
    "year": 1986,
    "debtUsdM": 774,
    "gdpUsdM": 2318,
-   "pct": 33.4
+   "pct": 33.4,
+   "cred": {
+    "mlt": 373.217,
+    "imf": 78.577,
+    "ven": 5.92,
+    "oth": 191.178,
+    "prv": 125.105
+   },
+   "venReported": true
   },
   {
    "year": 1987,
    "debtUsdM": 905.3,
    "gdpUsdM": 2047.2,
-   "pct": 44.2
+   "pct": 44.2,
+   "cred": {
+    "mlt": 448.832,
+    "imf": 80.238,
+    "ven": 3.991,
+    "oth": 221.208,
+    "prv": 151.012
+   },
+   "venReported": true
   },
   {
    "year": 1988,
    "debtUsdM": 877.1,
    "gdpUsdM": 2613.9,
-   "pct": 33.6
+   "pct": 33.6,
+   "cred": {
+    "mlt": 461.12,
+    "imf": 47.414,
+    "ven": 3.781,
+    "oth": 217.073,
+    "prv": 147.729
+   },
+   "venReported": true
   },
   {
    "year": 1989,
    "debtUsdM": 859.3,
    "gdpUsdM": 2736.2,
-   "pct": 31.4
+   "pct": 31.4,
+   "cred": {
+    "mlt": 477.087,
+    "imf": 41.348,
+    "ven": 2.82,
+    "oth": 214.185,
+    "prv": 123.876
+   },
+   "venReported": true
   },
   {
    "year": 1990,
    "debtUsdM": 939,
    "gdpUsdM": 3096.3,
-   "pct": 30.3
+   "pct": 30.3,
+   "cred": {
+    "mlt": 515.917,
+    "imf": 37.598,
+    "ven": 2.565,
+    "oth": 235.109,
+    "prv": 147.816
+   },
+   "venReported": true
   },
   {
    "year": 1991,
    "debtUsdM": 804.9,
    "gdpUsdM": 3473.6,
-   "pct": 23.2
+   "pct": 23.2,
+   "cred": {
+    "mlt": 534.059,
+    "imf": 32.586,
+    "ven": 2.347,
+    "oth": 83.836,
+    "prv": 152.07
+   },
+   "venReported": true
   },
   {
    "year": 1992,
    "debtUsdM": 830.3,
    "gdpUsdM": 2257.1,
-   "pct": 36.8
+   "pct": 36.8,
+   "cred": {
+    "mlt": 547.959,
+    "imf": 35.083,
+    "ven": 2.347,
+    "oth": 85.35,
+    "prv": 159.562
+   },
+   "venReported": true
   },
   {
    "year": 1993,
    "debtUsdM": 845.8,
    "gdpUsdM": 1878.3,
-   "pct": 45
+   "pct": 45,
+   "cred": {
+    "mlt": 541.331,
+    "imf": 33.786,
+    "ven": 2.347,
+    "oth": 79.113,
+    "prv": 189.253
+   },
+   "venReported": true
   },
   {
    "year": 1994,
    "debtUsdM": 758.2,
    "gdpUsdM": 2167.6,
-   "pct": 35
+   "pct": 35,
+   "cred": {
+    "mlt": 549.684,
+    "imf": 34.953,
+    "ven": 2.347,
+    "oth": 55.417,
+    "prv": 115.804
+   },
+   "venReported": true
   },
   {
    "year": 1995,
    "debtUsdM": 837.4,
    "gdpUsdM": 2813.3,
-   "pct": 29.8
+   "pct": 29.8,
+   "cred": {
+    "mlt": 631.685,
+    "imf": 28.689,
+    "ven": 1.597,
+    "oth": 148.803,
+    "prv": 26.628
+   },
+   "venReported": true
   },
   {
    "year": 1996,
    "debtUsdM": 924.2,
    "gdpUsdM": 2907.5,
-   "pct": 31.8
+   "pct": 31.8,
+   "cred": {
+    "mlt": 710.636,
+    "imf": 24.875,
+    "ven": 1.413,
+    "oth": 151.035,
+    "prv": 36.278
+   },
+   "venReported": true
   },
   {
    "year": 1997,
    "debtUsdM": 1071.8,
    "gdpUsdM": 3338.9,
-   "pct": 32.1
+   "pct": 32.1,
+   "cred": {
+    "mlt": 768.223,
+    "imf": 43.107,
+    "ven": 1.271,
+    "oth": 152.01,
+    "prv": 107.187
+   },
+   "venReported": true
   },
   {
    "year": 1998,
    "debtUsdM": 1068.5,
    "gdpUsdM": 3723.9,
-   "pct": 28.7
+   "pct": 28.7,
+   "cred": {
+    "mlt": 848.883,
+    "imf": 37.883,
+    "ven": 1.13,
+    "oth": 150.853,
+    "prv": 29.784
+   },
+   "venReported": true
   },
   {
    "year": 1999,
    "debtUsdM": 1221.7,
    "gdpUsdM": 4153.7,
-   "pct": 29.4
+   "pct": 29.4,
+   "cred": {
+    "mlt": 914.835,
+    "imf": 67.021,
+    "ven": 0.985,
+    "oth": 142.861,
+    "prv": 96.039
+   },
+   "venReported": true
   },
   {
    "year": 2000,
    "debtUsdM": 1205.1,
    "gdpUsdM": 6813.6,
-   "pct": 17.7
+   "pct": 17.7,
+   "cred": {
+    "mlt": 919.5,
+    "imf": 57.168,
+    "ven": 0.844,
+    "oth": 135.585,
+    "prv": 92.046
+   },
+   "venReported": true
   },
   {
    "year": 2001,
    "debtUsdM": 1271,
    "gdpUsdM": 6332,
-   "pct": 20.1
+   "pct": 20.1,
+   "cred": {
+    "mlt": 909.959,
+    "imf": 56.777,
+    "ven": 0.772,
+    "oth": 132.871,
+    "prv": 170.635
+   },
+   "venReported": true
   },
   {
    "year": 2002,
    "debtUsdM": 1271.1,
    "gdpUsdM": 6205.8,
-   "pct": 20.5
+   "pct": 20.5,
+   "cred": {
+    "mlt": 946.634,
+    "imf": 48.728,
+    "ven": 0.6,
+    "oth": 130.662,
+    "prv": 144.524
+   },
+   "venReported": true
   },
   {
    "year": 2003,
    "debtUsdM": 1360.9,
    "gdpUsdM": 5071.9,
-   "pct": 26.8
+   "pct": 26.8,
+   "cred": {
+    "mlt": 1011.231,
+    "imf": 37.485,
+    "ven": 0.348,
+    "oth": 198.563,
+    "prv": 113.284
+   },
+   "venReported": true
   },
   {
    "year": 2004,
    "debtUsdM": 1322.2,
    "gdpUsdM": 6087.4,
-   "pct": 21.7
+   "pct": 21.7,
+   "cred": {
+    "mlt": 1022.275,
+    "imf": 31.267,
+    "ven": 0.278,
+    "oth": 202.453,
+    "prv": 65.889
+   },
+   "venReported": true
   },
   {
    "year": 2005,
    "debtUsdM": 1345.9,
    "gdpUsdM": 7030.1,
-   "pct": 19.1
+   "pct": 19.1,
+   "cred": {
+    "mlt": 1075.729,
+    "imf": 41.281,
+    "ven": 0.139,
+    "oth": 202.044,
+    "prv": 26.659
+   },
+   "venReported": true
   },
   {
    "year": 2006,
    "debtUsdM": 1524.9,
    "gdpUsdM": 7638.7,
-   "pct": 20
+   "pct": 20,
+   "cred": {
+    "mlt": 1144.277,
+    "imf": 52.69,
+    "ven": 0,
+    "oth": 201.864,
+    "prv": 126.041
+   },
+   "venReported": true
   },
   {
    "year": 2007,
    "debtUsdM": 1710.4,
    "gdpUsdM": 9228.6,
-   "pct": 18.5
+   "pct": 18.5,
+   "cred": {
+    "mlt": 1248.296,
+    "imf": 76.894,
+    "ven": 0,
+    "oth": 275.92,
+    "prv": 109.339
+   },
+   "venReported": true
   },
   {
    "year": 2008,
    "debtUsdM": 2091.2,
    "gdpUsdM": 10433,
-   "pct": 20
+   "pct": 20,
+   "cred": {
+    "mlt": 1328.588,
+    "imf": 126.099,
+    "ven": 181.547,
+    "oth": 277.633,
+    "prv": 177.339
+   },
+   "venReported": true
   },
   {
    "year": 2009,
    "debtUsdM": 1556.3,
    "gdpUsdM": 11597,
-   "pct": 13.4
+   "pct": 13.4,
+   "cred": {
+    "mlt": 519.787,
+    "imf": 290.748,
+    "ven": 300.095,
+    "oth": 287.406,
+    "prv": 158.295
+   },
+   "venReported": true
   },
   {
    "year": 2010,
    "debtUsdM": 1045,
    "gdpUsdM": 11859.3,
-   "pct": 8.8
+   "pct": 8.8,
+   "cred": {
+    "mlt": 556.993,
+    "imf": 134.919,
+    "ven": 106.603,
+    "oth": 110.441,
+    "prv": 136.072
+   },
+   "venReported": true
   },
   {
    "year": 2011,
    "debtUsdM": 848.9,
    "gdpUsdM": 13008.7,
-   "pct": 6.5
+   "pct": 6.5,
+   "cred": {
+    "mlt": 76.851,
+    "imf": 148.179,
+    "ven": 454.742,
+    "oth": 41.141,
+    "prv": 128
+   },
+   "venReported": true
   },
   {
    "year": 2012,
    "debtUsdM": 1265.5,
    "gdpUsdM": 13708.9,
-   "pct": 9.2
+   "pct": 9.2,
+   "cred": {
+    "mlt": 78.277,
+    "imf": 169.07,
+    "ven": 819.976,
+    "oth": 41.141,
+    "prv": 157
+   },
+   "venReported": true
   },
   {
    "year": 2013,
    "debtUsdM": 1689.4,
    "gdpUsdM": 14902.5,
-   "pct": 11.3
+   "pct": 11.3,
+   "cred": {
+    "mlt": 77.623,
+    "imf": 178.233,
+    "ven": 1216.737,
+    "oth": 41.141,
+    "prv": 175.674
+   },
+   "venReported": true
   },
   {
    "year": 2014,
    "debtUsdM": 2094.1,
    "gdpUsdM": 15146.9,
-   "pct": 13.8
+   "pct": 13.8,
+   "cred": {
+    "mlt": 78.869,
+    "imf": 177.107,
+    "ven": 1602.748,
+    "oth": 41.141,
+    "prv": 194.248
+   },
+   "venReported": true
   },
   {
    "year": 2015,
    "debtUsdM": 2240,
    "gdpUsdM": 14849.6,
-   "pct": 15.1
+   "pct": 15.1,
+   "cred": {
+    "mlt": 81.225,
+    "imf": 177.542,
+    "ven": 1743.309,
+    "oth": 38.978,
+    "prv": 198.897
+   },
+   "venReported": true
   },
   {
    "year": 2016,
    "debtUsdM": 2301,
    "gdpUsdM": 14069.3,
-   "pct": 16.4
+   "pct": 16.4,
+   "cred": {
+    "mlt": 89.238,
+    "imf": 215.98,
+    "ven": 1771.066,
+    "oth": 36.057,
+    "prv": 188.657
+   },
+   "venReported": true
   },
   {
    "year": 2017,
    "debtUsdM": 2367.5,
    "gdpUsdM": 15093.4,
-   "pct": 15.7
+   "pct": 15.7,
+   "cred": {
+    "mlt": 101.185,
+    "imf": 212.666,
+    "ven": 1843.697,
+    "oth": 33.166,
+    "prv": 176.834
+   },
+   "venReported": true
   },
   {
    "year": 2018,
    "debtUsdM": 2470,
    "gdpUsdM": 16403.9,
-   "pct": 15.1
+   "pct": 15.1,
+   "cred": {
+    "mlt": 99.288,
+    "imf": 200.58,
+    "ven": 1852.318,
+    "oth": 30.154,
+    "prv": 287.663
+   },
+   "venReported": true
   },
   {
    "year": 2019,
    "debtUsdM": 2470.3,
    "gdpUsdM": 15016.1,
-   "pct": 16.5
+   "pct": 16.5,
+   "cred": {
+    "mlt": 96.358,
+    "imf": 185.491,
+    "ven": 1852.77,
+    "oth": 27.234,
+    "prv": 308.468
+   },
+   "venReported": true
   },
   {
    "year": 2020,
    "debtUsdM": 2619.4,
    "gdpUsdM": 14508.2,
-   "pct": 18.1
+   "pct": 18.1,
+   "cred": {
+    "mlt": 92.13,
+    "imf": 291.051,
+    "ven": 1853.038,
+    "oth": 46.811,
+    "prv": 336.401
+   },
+   "venReported": true
   },
   {
    "year": 2021,
    "debtUsdM": 2970.1,
    "gdpUsdM": 20755,
-   "pct": 14.3
+   "pct": 14.3,
+   "cred": {
+    "mlt": 85.863,
+    "imf": 502.45,
+    "ven": 1853.038,
+    "oth": 126.392,
+    "prv": 402.326
+   },
+   "venReported": true
   },
   {
    "year": 2022,
    "debtUsdM": 2965.3,
    "gdpUsdM": 20113,
-   "pct": 14.7
+   "pct": 14.7,
+   "cred": {
+    "mlt": 77.638,
+    "imf": 444.693,
+    "ven": 1871.798,
+    "oth": 152.743,
+    "prv": 418.398
+   },
+   "venReported": true
   },
   {
    "year": 2023,
    "debtUsdM": 3156.5,
    "gdpUsdM": 19572.3,
-   "pct": 16.1
+   "pct": 16.1,
+   "cred": {
+    "mlt": 71.319,
+    "imf": 552.721,
+    "ven": 1973.649,
+    "oth": 126.774,
+    "prv": 432.074
+   },
+   "venReported": true
   },
   {
    "year": 2024,
    "debtUsdM": 944.7,
    "gdpUsdM": 24255.7,
-   "pct": 3.9
+   "pct": 3.9,
+   "cred": {
+    "mlt": 65.503,
+    "imf": 559.219,
+    "ven": 26.799,
+    "oth": 124.581,
+    "prv": 168.639
+   },
+   "venReported": true
   }
  ]
 }

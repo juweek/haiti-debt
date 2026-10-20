@@ -13,7 +13,7 @@ export const LANGS = [
 const en = {
   kicker: 'Haiti’s Independence Debt',
   headline: 'Haiti paid for its freedom, year after year',
-  dek: 'In 1825, France demanded 150 million francs from Haiti in exchange for recognizing its independence. Haiti paid France and its bankers until 1888, then paid off US loans until 1947. Drag across the chart, or use the slider, to move through the years.',
+  dek: 'In 1825, France demanded 150 million francs from Haiti in exchange for recognizing its independence. Haiti paid France and its bankers until 1888, then paid off US loans until 1947. Since 1970 the World Bank has tracked who Haiti owes. Use the pills above the chart to switch measures, the boxes to turn categories on and off, and drag across the chart or use the slider to move through the years.',
   navExplorer: 'Explorer',
   navSources: 'Sources & method',
   langNotice: 'Translation coming soon. Showing English for now.',
@@ -39,7 +39,7 @@ const en = {
   modernTitle: 'After 1947: Haiti’s external debt today',
   source: 'Source',
   sources: 'Sources',
-  footer: 'Data: The New York Times (nytimes/haiti-debt), S. Henochsberg (2016), World Bank, and archival reports. Every number is listed on the sources page.',
+  footer: 'Data: The New York Times (nytimes/haiti-debt), S. Henochsberg (2016), World Bank WDI and International Debt Statistics, and archival reports. Every number is listed on the',
 };
 
 const STRINGS = { en, ht: {}, fr: {} };
