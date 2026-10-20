@@ -87,7 +87,8 @@ The script asserts these against the fact-checked values in
 - **Henochsberg line is digitized** from a chart: ±1M francs, ±1 year.
 - **2024 WB drop** ($3.16B → $0.94B) coincides with the PetroCaribe settlement, but the attribution is unverified.
 - **Wikipedia gives 1883** for the end of the indemnity; the NYT data shows indemnity payments ending in 1878 and loan payments in 1888. The site uses the NYT.
-- **Two units on one chart.** "Amount owed" over the full span shows francs (left axis, 1825–1915) and current US$ (right axis, 1970–2024), never converted into each other.
+- **One unit at a time.** Since v3 the chart shows francs (1825–1915) or US$ (1915–1927 receivership gross public debt, which includes internal debt; 1970–2024 World Bank external debt), never both. The 1915–1927 US$ series is from [receiver_1927] Table 52, gourdes ÷ 5.
+- **(v2, superseded) Two units on one chart.** "Amount owed" over the full span shows francs (left axis, 1825–1915) and current US$ (right axis, 1970–2024), never converted into each other.
 - **No creditor split before 1970.** The 19th-century breakdown is by payment category (indemnity / loan / late fees), from the NYT file.
 - **IMF Historical Public Debt Database** was unreachable (403) during research.
 

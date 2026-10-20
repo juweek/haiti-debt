@@ -4,18 +4,17 @@ An interactive, sourced look at the "double debt" France imposed on Haiti in 182
 the US-era loans that followed, and who Haiti has owed since 1970, in the
 Gourmet Data chart style.
 
-- **Explorer** (`index.html`): one large chart. Pills switch between *Debt owed*
-  and *Payments made*; between the amount (francs 1825–1915 on the left axis,
-  current US$ 1970–2024 on the right), % of GDP, and a 100% breakdown (World Bank
-  IDS creditor groups since 1970; indemnity / 1825 loan / late fees for
-  1826–1888); and between the full span and each era. Checkboxes add or remove
-  series and the stack re-draws with a 500ms transition. Scrub, hover or tap any
-  year for a tooltip, event notes and a shareable link. A "What it cost" panel
-  switches between francs, 2021 dollars and the NYT's lost-growth range.
+- **Explorer** (`index.html`): one large chart under a sticky maroon hero band.
+  A switch flips between *Debt owed* and *Payments made*; Measure is Amount / % of GDP /
+  Share; Unit is Francs (1825–1915) or US$ (1915–1927 receivership, 1970–2024 World Bank),
+  one at a time. *More options* sets the years shown and splits the debt by creditor (or
+  payments by what they paid for). Scrub, drag, use prev/next event, or press Play for a
+  ~9-second sweep that pauses on each event. The year note gives the event and the values
+  drawn, with sources.
 - **Sources & method** (`sources.html`): every number, how it was calculated,
-  what is missing, and CSV/JSON downloads.
+  what is missing, the "What it cost" panel, and CSV/JSON downloads.
 
-Built for sharing on social media (links keep the year and view: `index.html#y=2017&s=debt&m=mix&e=modern`),
+Built for sharing on social media (links keep the year and view: `index.html#y=2017&s=debt&m=share&u=fr&e=modern&sp=1`),
 and meant as a real reference for Haitians and Haitian Americans. Nothing is
 shown that isn't traceable to a source in [`data/SOURCES.md`](data/SOURCES.md).
 
@@ -45,11 +44,6 @@ used under its license (non-commercial use, credit to The New York Times; see
 `data/raw/nyt/LICENSE`). GDP estimates: Simon Henochsberg (2016). US-era figures:
 Haiti's receivership reports, FRUS, and the IMF's 1950 survey. Modern series:
 World Bank WDI and International Debt Statistics (CC BY 4.0). Full list: [`data/SOURCES.md`](data/SOURCES.md).
-
-## Languages
-
-English only for now. The Kreyòl and French toggles are wired up (`src/i18n.js`)
-and fall back to English until the strings are translated.
 
 ## Design
 
