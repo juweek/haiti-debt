@@ -6,7 +6,7 @@ import { mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const PORT = 4179;
-const BASE = `http://localhost:${PORT}`;
+const BASE = `http://localhost:${PORT}/haiti-debt`; // vite.config.js base
 const OUT = new URL('../process/', import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
 for (const f of readdirSync(OUT)) if (f.endsWith('.png')) unlinkSync(OUT + f);
@@ -73,28 +73,72 @@ async function hoverYear(page, year, touch = false) {
 
 // Each view: name + hash.
 const VIEWS = [
-  ['pct-full', 'y=1826&s=debt&m=pct&e=full'],
-  ['raw-full', 'y=1838&s=debt&m=raw&e=full'],
-  ['mix-full', 'y=2017&s=debt&m=mix&e=full'],
-  ['raw-hist', 'y=1880&s=debt&m=raw&e=hist'],
-  ['pct-modern', 'y=1993&s=debt&m=pct&e=modern'],
-  ['mix-modern', 'y=2017&s=debt&m=mix&e=modern'],
-  ['mix-modern-no-ven-imf', 'y=2017&s=debt&m=mix&e=modern&off=ven,imf'],
-  ['raw-modern-no-ven-imf', 'y=2017&s=debt&m=raw&e=modern&off=ven,imf'],
-  ['pay-raw', 'y=1840&s=pay&m=raw&e=full'],
-  ['pay-pct', 'y=1840&s=pay&m=pct&e=full'],
-  ['pay-mix', 'y=1875&s=pay&m=mix&e=full'],
-  ['pay-mix-no-fees', 'y=1875&s=pay&m=mix&e=full&off=fees'],
+  ['pct-full-event-1838', 'y=1838&s=debt&m=pct&u=fr&e=full&sp=0'],
+  ['pct-full-nonevent-1860', 'y=1860&s=debt&m=pct&u=fr&e=full&sp=0'],
+  ['raw-francs-full', 'y=1838&s=debt&m=raw&u=fr&e=full&sp=0'],
+  ['raw-usd-full', 'y=2017&s=debt&m=raw&u=usd&e=full&sp=0'],
+  ['raw-usd-hist', 'y=1922&s=debt&m=raw&u=usd&e=hist&sp=0'],
+  ['pct-modern', 'y=1993&s=debt&m=pct&u=fr&e=modern&sp=0'],
+  ['share-modern', 'y=2017&s=debt&m=share&u=fr&e=modern&sp=1'],
+  ['split-raw-usd-modern', 'y=2015&s=debt&m=raw&u=usd&e=modern&sp=1'],
+  ['split-pct-full-no-ven-imf', 'y=2005&s=debt&m=pct&u=fr&e=full&sp=1&off=ven,imf'],
+  ['nodata-1950', 'y=1950&s=debt&m=raw&u=usd&e=full&sp=0'],
+  ['pay-raw', 'y=1840&s=pay&m=raw&u=fr&e=hist&sp=0'],
+  ['pay-split', 'y=1875&s=pay&m=raw&u=fr&e=hist&sp=1'],
+  ['pay-share', 'y=1875&s=pay&m=share&u=fr&e=hist&sp=1'],
+  ['pay-pct-split-no-fees', 'y=1840&s=pay&m=pct&u=fr&e=hist&sp=1&off=fees'],
 ];
 
-async function shootViews(page, prefix, mobile) {
+async function shootViews(page, prefix) {
   for (const [name, hash] of VIEWS) {
-    await page.goto(url('index.html', `${hash}`));
+    await page.goto(url('index.html', hash));
     await page.waitForSelector('svg.chart');
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(800);
     await check(page, `${prefix} ${name}`);
     await page.locator('section.hero-card').screenshot({ path: `${OUT}${prefix}-${name}.png` });
   }
+}
+
+async function shootStates(page, prefix) {
+  // hero at the top, then mid-scroll (card sliding over the sticky hero)
+  await page.goto(url('index.html', 'y=1838'));
+  await page.waitForSelector('svg.chart');
+  await page.waitForTimeout(500);
+  await check(page, `${prefix} hero top`);
+  await page.screenshot({ path: `${OUT}${prefix}-hero-top.png` });
+  await page.screenshot({ path: `${OUT}${prefix}-page-full.png`, fullPage: true });
+  const heroH = await page.locator('header.hero').evaluate((el) => el.offsetHeight);
+  await page.evaluate((y) => window.scrollTo(0, y), Math.round(heroH * 0.6));
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${OUT}${prefix}-hero-scrolled-mid.png` });
+  await page.evaluate((y) => window.scrollTo(0, y), heroH + 40);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}${prefix}-hero-scrolled-under.png` });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  // Options open
+  await page.locator('.opt-btn').click();
+  await page.waitForTimeout(200);
+  await check(page, `${prefix} options open`);
+  await page.locator('section.hero-card').screenshot({ path: `${OUT}${prefix}-options-open.png` });
+  // split morph mid-frame (turn split on from the options panel)
+  await page.goto(url('index.html', 'y=2010&s=debt&m=raw&u=usd&e=modern&sp=0'));
+  await page.waitForSelector('svg.chart');
+  await page.waitForTimeout(700);
+  await page.locator('.opt-btn').click();
+  await page.locator('.opt-panel [role=switch]').click();
+  await page.waitForTimeout(280);
+  await page.locator('section.hero-card').screenshot({ path: `${OUT}${prefix}-split-morph-midframe.png` });
+  await page.waitForTimeout(700);
+  await check(page, `${prefix} split after morph`);
+  // Play mid-sweep
+  await page.goto(url('index.html', 'y=1825&s=debt&m=pct&u=fr&e=full&sp=0'));
+  await page.waitForSelector('svg.chart');
+  await page.waitForTimeout(500);
+  await page.locator('button.play').click();
+  await page.waitForTimeout(4200);
+  await check(page, `${prefix} play mid-sweep`);
+  await page.locator('section.hero-card').screenshot({ path: `${OUT}${prefix}-play-midsweep.png` });
+  await page.locator('button.play').click();
 }
 
 // Navigating to a URL that differs only by hash does not reload the page, so add a query.
@@ -103,42 +147,23 @@ const url = (path, hash = '') => `${BASE}/${path}?v=${++nav}${hash ? `#${hash}` 
 const browser = await chromium.launch();
 try {
   const desk = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await desk.goto(url('index.html', `y=1826`));
-  await desk.waitForSelector('svg.chart');
-  await desk.waitForTimeout(400);
-  await desk.screenshot({ path: `${OUT}desktop-first-screen.png` });
-  await desk.screenshot({ path: `${OUT}desktop-explorer-full.png`, fullPage: true });
-  await shootViews(desk, 'desktop', false);
-  // transition mid-frame (pct → mix) to confirm the tween runs
-  await desk.goto(url('index.html', `y=2010&s=debt&m=pct&e=modern`));
-  await desk.waitForSelector('svg.chart');
-  await desk.waitForTimeout(800);
-  await desk.getByRole('radio', { name: /Breakdown/ }).click();
-  await desk.waitForTimeout(230);
-  await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-transition-midframe.png` });
-  // tooltip on hover
-  await desk.goto(url('index.html', `y=1826&s=debt&m=raw&e=full`));
+  await shootStates(desk, 'desktop');
+  await shootViews(desk, 'desktop');
+  await desk.goto(url('index.html', 'y=1826&s=debt&m=raw&u=fr&e=full&sp=0'));
   await desk.waitForSelector('svg.chart');
   await hoverYear(desk, 1840);
-  await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-hover-1840-raw.png` });
-  await check(desk, 'desktop-hover-1840-raw');
-  await desk.goto(url('index.html', `y=2010&s=debt&m=mix&e=modern`));
-  await desk.waitForSelector('svg.chart');
-  await hoverYear(desk, 2009);
-  await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-hover-2009-mix.png` });
-  await check(desk, 'desktop-hover-2009-mix');
-  await desk.getByRole('tab', { name: 'Lost growth' }).click();
-  await desk.locator('section.cost').screenshot({ path: `${OUT}desktop-cost-lost-growth.png` });
+  await check(desk, 'desktop-hover-1840');
+  await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-hover-1840.png` });
   await desk.goto(url('sources.html'));
   await check(desk, 'desktop sources');
   await desk.screenshot({ path: `${OUT}desktop-sources-full.png`, fullPage: true });
 
   // Social card: the chart card alone (title + chart), controls hidden.
   const og = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-  await og.goto(url('index.html', 'y=1888&s=debt&m=raw&e=full'));
+  await og.goto(url('index.html', 'y=1888&s=debt&m=pct&u=fr&e=full&sp=0'));
   await og.waitForSelector('svg.chart');
-  await og.addStyleTag({ content: `.site-header,.controls-block,.main-slider,.controls,.year-note,.source-block .src,.subhead{display:none!important}
-    h1{font-size:40px!important;margin-bottom:6px!important}.card{padding-top:18px!important}.source-block{border:0!important;margin:0!important;padding:0!important;position:absolute;right:28px;top:18px}` });
+  await og.addStyleTag({ content: `.hero,.ctl,.scrubber,.controls,.year-note,.source-block .src,.subhead{display:none!important}
+    .chart-title{font-size:40px!important;margin-bottom:6px!important}.card{padding-top:18px!important}.source-block{border:0!important;margin:0!important;padding:0!important;position:absolute;right:28px;top:18px}` });
   await og.waitForTimeout(600);
   await og.evaluate(() => window.scrollTo(0, 0));
   await og.screenshot({ path: new URL('../public/og-image.png', import.meta.url).pathname });
@@ -148,34 +173,17 @@ try {
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
   });
   const ph = await ctx.newPage();
-  await ph.goto(url('index.html', `y=1826`));
-  await ph.waitForSelector('svg.chart');
-  await ph.waitForTimeout(400);
-  await ph.screenshot({ path: `${OUT}iphone-first-screen.png` });
-  await ph.screenshot({ path: `${OUT}iphone-explorer-full.png`, fullPage: true });
-  await shootViews(ph, 'iphone', true);
-  await ph.goto(url('index.html', `y=1826&s=debt&m=pct&e=full`));
+  await shootStates(ph, 'iphone');
+  await shootViews(ph, 'iphone');
+  await ph.goto(url('index.html', 'y=1826&s=debt&m=pct&u=fr&e=full&sp=0'));
   await ph.waitForSelector('svg.chart');
   await hoverYear(ph, 1922, true);
-  await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-tap-1922.png` });
   await check(ph, 'iphone-tap-1922');
-  await ph.goto(url('index.html', `y=2010&s=debt&m=mix&e=modern&off=imf`));
-  await ph.waitForSelector('svg.chart');
-  await hoverYear(ph, 2015, true);
-  await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-tap-2015-mix-no-imf.png` });
-  await check(ph, 'iphone-tap-2015-mix-no-imf');
+  await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-tap-1922.png` });
   await ph.locator('.main-slider input').focus();
-  await ph.keyboard.press('PageDown');
-  await ph.waitForTimeout(650);
-  await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-keyboard-slider.png` });
-  await check(ph, 'iphone-keyboard-slider');
-  for (const tab of ['2021 dollars', 'Lost growth']) {
-    await ph.getByRole('tab', { name: tab }).click();
-    await ph.locator('section.cost').screenshot({ path: `${OUT}iphone-cost-${tab.replace(/\W+/g, '-').toLowerCase()}.png` });
-  }
-  await check(ph, 'iphone after interactions');
-  await ph.getByRole('button', { name: 'KR' }).click();
-  await ph.screenshot({ path: `${OUT}iphone-lang-kreyol-stub.png` });
+  await ph.keyboard.press('PageUp');
+  await ph.waitForTimeout(300);
+  await check(ph, 'iphone-keyboard-1932');
   await ph.goto(url('sources.html'));
   await check(ph, 'iphone sources');
   await ph.screenshot({ path: `${OUT}iphone-sources-full.png`, fullPage: true });

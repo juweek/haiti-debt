@@ -12,27 +12,26 @@ social-media readers and Haitians / Haitian Americans who want a reliable refere
 - Multi-page Vite build: `vite.config.js` → `build.rollupOptions.input` lists
   `index.html` (explorer) and `sources.html` (sources & method). To add a page,
   add an HTML file at the root, a `src/<name>-main.jsx` entry, and an `input` key.
-- `base: './'` so `dist/` works from any path (GitHub Pages, Netlify, a subfolder).
+- `base: '/haiti-debt/'` for GitHub Pages (https://juweek.github.io/haiti-debt/). Build every runtime link/asset path with `url()` from `src/paths.js`, never a bare `'sources.html'` or `'/img/...'`. `.github/workflows/deploy.yml` builds from committed data (no `data:refresh` in CI); `npm run check:deploy` catches 404s under the subpath.
 - Charts are hand-built SVG in React; d3 only computes scales and paths.
 
 ## Layout
 
 ```
 index.html, sources.html      page shells (meta / OG tags)
-src/main.jsx                  explorer page: chart card (title, pills, chart, slider, year note, sources), key numbers, cost panel
-src/model.js                  chart model: palette (PAL), eras, measures, series, layers/stacking, axes, titles, notes, annotations
-src/hooks/useTween.js         500ms rAF tween between modes (respects prefers-reduced-motion; resizes snap)
-src/sources-main.jsx          sources & methodology page (renders the source registry)
+src/main.jsx                  explorer page: chart card (title, controls, legend, chart, scrubber, year note, sources); Play; URL hash
+src/model.js                  chart model: palette (PAL), eras, measures, units, split, normalize(), layers, bands, titles, notes, value labels, year-note rows
+src/hooks/useTween.js         rAF tween between views (600ms morph; respects prefers-reduced-motion; resizes snap)
+src/sources-main.jsx          sources & methodology page (registry, method, "What it cost" panel)
 src/components/
-  Shell.jsx                   header (nav, language toggle), footer with Gourmet Data lockup
-  MainChart.jsx               the hero chart: split franc/US$ axes, stacked areas/bars, lines, gap bands,
-                              annotations, event band, cursor, tooltip (pointer + touch + slider focus)
-  Controls.jsx                pill toggles (Show / Measure / Years) + series checkboxes
-  SourceBlock.jsx             reference-style "Sources: / Note:" block under a thin rule, logo bottom right
-  CostPanel.jsx               francs / 2021 $ / lost-growth tabs
-  labelLayout.js              greedy row packing so event labels never overlap
-  HaloText.jsx                SVG text with a backing rect (keeps cursor lines out of labels)
-  SourceRef.jsx               "Source: … · details" links from source ids
+  Shell.jsx                   sticky maroon hero band (site bar, kicker, title, dek; 0.4× parallax + fade), paper card, footer
+  MainChart.jsx               the hero chart: one left axis, lines + light fill, stacked creditor areas / payment bars,
+                              no-data and other-unit bands, start/peak labels, cursor (line, dot, value, year tag)
+  Controls.jsx                Debt/Payments switch, Measure and Unit segmented controls, More options (years, breakdown), Legend/chips
+  Scrubber.jsx                year slider aligned with the plot, event dots under the track
+  SourceBlock.jsx             "Sources: / Note:" block under a thin rule, Gourmet Data lockup bottom right
+  CostPanel.jsx               francs / 2021 $ / lost-growth tabs (sources page only)
+  SourceRef.jsx               "Sources: … · details" links from source ids
 src/assets/fonts/             IBM Plex subsets (WOFF, SIL OFL), bundled via @font-face in styles.css
 public/img/gd-lockup-stacked.png  Gourmet Data sign-off
 src/i18n.js                   EN strings; `ht` / `fr` stubs fall back to EN
@@ -87,22 +86,28 @@ document it in `data/SOURCES.md`, then reference it from components via
 - Look: Gourmet Data chart style. Colors are `PAL` in `src/model.js` / CSS vars in
   `styles.css`, copied from `/workspace/email-charts/gd_chart.py` (`C`) and
   `/workspace/haiti-debt/hd_render_cmp.py` (light tints). Don't invent new colors.
-  Headlines 700 IBM Plex Sans Condensed; body IBM Plex Sans; annotations Condensed
-  Medium Italic in `story` with a paper halo and a thin leader + arrowhead
-  (`gd_annostyle.py` style "A").
-- Units: "Amount owed" over the full span uses two y-axes (francs left, US$ right),
-  each drawn only over its own years. Never put both on one scale, never draw across
-  the 1916–1969 gap.
-- Mobile-first; check at 390px (iPhone) and 1280px. The page must never scroll
-  sideways and SVG text must stay inside the chart: `scripts/screenshots.mjs` fails otherwise.
-- Pills wrap (no horizontal scroller, no edge fades). Titles and subtitles are
-  computed from `data.stats` in `titlesFor()`; annotation numbers come from data too.
-- Accessibility: the native range input is the keyboard control (arrows ±1,
-  Page Up/Down ±10, Home/End); the SVG is `aria-hidden`, the year note is
-  `aria-live`, pills are `role=radio`.
-- Touch: the SVG uses `touch-action: pan-y`, so horizontal drags scrub and
-  vertical drags scroll. The tooltip hides 1.8s after a touch ends.
-- URL hash holds the view: `y` year, `s` subject, `m` measure, `e` era, `off` unchecked series.
+  Headlines 700 IBM Plex Sans Condensed; body IBM Plex Sans.
+- Layout follows `reference/v3-spec/` (numbered notes in `01M5DHPWVFF1XZ81Y9BRNK20DK.png`).
+- Units: one currency at a time on one left axis. Francs = 1825–1915 (Henochsberg);
+  US$ = 1915–1927 (receivership gross public debt) and 1970–2024 (World Bank). The other
+  currency's years are a soft band with a "switch unit" hint. Never convert one into the other,
+  never draw across a gap.
+- `normalize()` enforces the rules: Share ⇒ split on (and 1970–2024 for debt); payments ⇒
+  1825–1947 and francs; Amount + Francs + 1970–2024 ⇒ US$.
+- The chart has no event rules or italic notes: events live in the scrubber dots, prev/next
+  buttons, Play holds and the year note. Value labels are start/peak only and are dropped
+  when they would collide with each other or the cursor value.
+- Mobile-first; check at 390px (iPhone) and 1280px. The page must never scroll sideways,
+  SVG text must stay inside the chart, and no two labels may overlap (including the cursor
+  tag): `scripts/screenshots.mjs` fails otherwise.
+- Titles and subtitles are computed from `data.stats` in `titlesFor()`.
+- Accessibility: the native range input is the keyboard control (arrows ±1, Page Up/Down ±10,
+  Home/End); segmented controls are radio groups (arrow keys); the subject and breakdown
+  switches are `role=switch`; the year note is `aria-live`; the SVG is `aria-hidden`.
+- Motion: the hero parallax, the split morph and Play respect `prefers-reduced-motion`
+  (Play then steps event to event).
+- URL hash holds the view: `y` year, `s` subject, `m` measure (raw/pct/share), `u` unit (fr/usd),
+  `e` era, `sp` split (0/1), `off` hidden creditors / payment categories.
 
 ## Verify before committing
 

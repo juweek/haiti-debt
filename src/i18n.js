@@ -1,4 +1,4 @@
-// Language toggle stub. English is the only complete language for now.
+// UI strings. English only (the language toggle was removed in the v3 design).
 // To translate: copy the `en` object into `ht` (Kreyòl ayisyen) or `fr` and
 // translate the values. Missing keys fall back to English, so partial
 // translations are safe. Numbers come from data, not from these strings.

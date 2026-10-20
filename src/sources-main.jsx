@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import data from './data/explorer.json';
 import Shell from './components/Shell.jsx';
+import CostPanel from './components/CostPanel.jsx';
+import { url } from './paths.js';
 import { francs, dollars, pct } from './format.js';
 import './styles.css';
 
@@ -32,8 +34,8 @@ const CP = S.credPeaks;
 function Sources() {
   return (
     <article className="prose">
-      <p className="kicker">Sources and methodology</p>
-      <h1>Where every number comes from</h1>
+      <div className="brand-bar" aria-hidden="true" />
+      <h2 className="chart-title">Where every number comes from</h2>
       <p className="dek">
         This explorer only shows figures that come from a published dataset or document listed below. Ratios and totals are
         calculated from those sources by <code>scripts/build-data.mjs</code>; the script checks them against a fact-checked
@@ -56,7 +58,7 @@ function Sources() {
         <li>150 million francs in 2021 dollars, using the NYT’s formula and 1825 rates: <b>≈{dollars(S.indemnity150InUsd2021)}</b>. This one is our calculation, not a published figure. <Cite id="nyt_data" /></li>
       </ul>
 
-      <h2 id="series">Data series in the charts</h2>
+      <h2 id="series">Data series used</h2>
       <div className="table-wrap">
         <table>
           <thead><tr><th scope="col">Series</th><th scope="col">Years</th><th scope="col">How</th><th scope="col">Source</th></tr></thead>
@@ -73,8 +75,8 @@ function Sources() {
       <p>“Paid that year” is what Haiti paid from its own revenue. The 24 million francs of the first installment paid with the 1825 loan are counted through the loan repayments, as in the NYT data, so 1825 shows no payment.</p>
       <p>Dollar conversions follow the NYT: amount ÷ exchange rate × (2021 US CPI ÷ that year’s US CPI). CPI is the Minneapolis Fed historical series, as included in the NYT file.</p>
 
-      <p>The five creditor groups add up exactly to IDS total external debt (DT.DOD.DECT.CD), which matches the WDI figure used for “% of GDP”; the build script fails if they ever differ. “Breakdown (100%)” shows each group’s share of the checked groups, so unchecking a group re-normalizes the rest to 100%.</p>
-      <p>“Amount owed” over the full span puts two units on one chart: millions of francs (left axis, 1825–1915) and millions of current US dollars (right axis, 1970–2024). They are not converted into each other, and the line never crosses the 1916–1969 gap.</p>
+      <p>The five creditor groups add up exactly to IDS total external debt (DT.DOD.DECT.CD), which matches the WDI figure used for “% of GDP”; the build script fails if they ever differ. “Share” shows each group’s share of the groups shown, so hiding a group re-normalizes the rest to 100%.</p>
+      <p>“Amount” shows one currency at a time on a single axis: francs for 1825–1915 (Henochsberg’s estimate), or US dollars for 1915–1927 (the receivership’s gross public debt, which includes internal debt) and 1970–2024 (World Bank external debt). The years recorded in the other currency are shaded, and the two are never converted into each other. “Share” and “Split” use the creditor groups (1970–2024) or the NYT payment categories (1826–1888); shares are of the groups shown.</p>
 
       <h2 id="gaps">Gaps and caveats</h2>
       <ul>
@@ -99,10 +101,12 @@ function Sources() {
         ))}
       </ol>
 
+      <CostPanel />
+
       <h2 id="download">Download the data</h2>
       <p>
-        <a href="data/haiti-debt-explorer.csv" download>haiti-debt-explorer.csv</a> (one row per year, 1825–1947) ·{' '}
-        <a href="data/haiti-debt-explorer.json" download>haiti-debt-explorer.json</a> (everything on this site, with sources).
+        <a href={url('data/haiti-debt-explorer.csv')} download>haiti-debt-explorer.csv</a> (one row per year, 1825–1947) ·{' '}
+        <a href={url('data/haiti-debt-explorer.json')} download>haiti-debt-explorer.json</a> (everything on this site, with sources).
         NYT-derived data is for non-commercial use with credit to The New York Times.
       </p>
       <p className="muted">Data built {new Date(data.meta.builtAt).toLocaleDateString('en-US', { dateStyle: 'long' })}. World Bank WDI last updated {data.meta.worldBankLastUpdated}; IDS last updated {data.meta.idsLastUpdated}.</p>
@@ -115,6 +119,6 @@ function Sources() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Shell page="sources"><Sources /></Shell>
+    <Shell page="sources" hero={{ kicker: 'Sources and methodology', title: 'Sources & method', dek: 'Every number in the explorer, where it comes from, how it was calculated, and what is missing.' }}><Sources /></Shell>
   </StrictMode>,
 );

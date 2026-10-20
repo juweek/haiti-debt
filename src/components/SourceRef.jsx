@@ -1,4 +1,5 @@
 import data from '../data/explorer.json';
+import { url } from '../paths.js';
 
 /** Inline "Source: A; B" with links to the registry entries. */
 export default function SourceRef({ ids, label = 'Source', className = '', as: Tag = 'p' }) {
@@ -14,7 +15,7 @@ export default function SourceRef({ ids, label = 'Source', className = '', as: T
         </span>
       ))}
       {' · '}
-      <a href={`sources.html#${list[0].id}`}>details</a>
+      <a href={url(`sources.html#${list[0].id}`)}>details</a>
     </Tag>
   );
 }
