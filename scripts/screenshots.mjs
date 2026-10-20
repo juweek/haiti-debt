@@ -32,10 +32,30 @@ async function check(page, name) {
         if (b.left < sb.left - 0.5 || b.right > sb.right + 0.5 || b.top < sb.top - 0.5 || b.bottom > sb.bottom + 0.5) clipped.push(t.textContent.slice(0, 30));
       }
     }
-    return { vw, sw: document.documentElement.scrollWidth, wide, clipped };
+    // Label-to-label collisions: any two visible SVG text boxes (or a text box and the
+    // cursor year tag) that intersect by more than 1px. Lines/areas under a label are fine.
+    const collide = [];
+    if (svg) {
+      const boxes = [...svg.querySelectorAll('text')]
+        .filter((t) => t.textContent.trim() && getComputedStyle(t).visibility !== 'hidden' && Number(getComputedStyle(t).opacity) > 0)
+        .map((t) => ({ t, label: t.textContent.slice(0, 28), b: t.getBoundingClientRect(), tag: !!t.closest('[pointer-events="none"]') && t.classList.contains('cursor-tag-text') }))
+        .filter((o) => o.b.width);
+      const tag = svg.querySelector('rect.cursor-tag');
+      if (tag) boxes.push({ label: '[cursor tag]', b: tag.getBoundingClientRect(), isTag: true });
+      const hit = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const A = boxes[i], B = boxes[j];
+          // the tag's own year text sits inside the tag by design
+          if ((A.isTag && B.t?.classList.contains('cursor-tag-text')) || (B.isTag && A.t?.classList.contains('cursor-tag-text'))) continue;
+          if (hit(A.b, B.b)) collide.push(`"${A.label}" × "${B.label}"`);
+        }
+      }
+    }
+    return { vw, sw: document.documentElement.scrollWidth, wide, clipped, collide };
   });
-  const ok = r.sw <= r.vw && r.wide.length === 0 && r.clipped.length === 0;
-  console.log(`${ok ? '✓' : '✗'} ${name}: scrollWidth ${r.sw}/${r.vw}${r.wide.length ? ` → ${r.wide.join(', ')}` : ''}${r.clipped.length ? ` clipped: ${r.clipped.join(' | ')}` : ''}`);
+  const ok = r.sw <= r.vw && r.wide.length === 0 && r.clipped.length === 0 && r.collide.length === 0;
+  console.log(`${ok ? '✓' : '✗'} ${name}: scrollWidth ${r.sw}/${r.vw}${r.wide.length ? ` → ${r.wide.join(', ')}` : ''}${r.clipped.length ? ` clipped: ${r.clipped.join(' | ')}` : ''}${r.collide.length ? ` overlaps: ${r.collide.slice(0, 6).join(', ')}` : ''}`);
   if (!ok) problems.push(name);
 }
 
@@ -101,10 +121,12 @@ try {
   await desk.waitForSelector('svg.chart');
   await hoverYear(desk, 1840);
   await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-hover-1840-raw.png` });
+  await check(desk, 'desktop-hover-1840-raw');
   await desk.goto(url('index.html', `y=2010&s=debt&m=mix&e=modern`));
   await desk.waitForSelector('svg.chart');
   await hoverYear(desk, 2009);
   await desk.locator('section.hero-card').screenshot({ path: `${OUT}desktop-hover-2009-mix.png` });
+  await check(desk, 'desktop-hover-2009-mix');
   await desk.getByRole('tab', { name: 'Lost growth' }).click();
   await desk.locator('section.cost').screenshot({ path: `${OUT}desktop-cost-lost-growth.png` });
   await desk.goto(url('sources.html'));
@@ -136,14 +158,17 @@ try {
   await ph.waitForSelector('svg.chart');
   await hoverYear(ph, 1922, true);
   await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-tap-1922.png` });
+  await check(ph, 'iphone-tap-1922');
   await ph.goto(url('index.html', `y=2010&s=debt&m=mix&e=modern&off=imf`));
   await ph.waitForSelector('svg.chart');
   await hoverYear(ph, 2015, true);
   await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-tap-2015-mix-no-imf.png` });
+  await check(ph, 'iphone-tap-2015-mix-no-imf');
   await ph.locator('.main-slider input').focus();
   await ph.keyboard.press('PageDown');
   await ph.waitForTimeout(650);
   await ph.locator('section.hero-card').screenshot({ path: `${OUT}iphone-keyboard-slider.png` });
+  await check(ph, 'iphone-keyboard-slider');
   for (const tab of ['2021 dollars', 'Lost growth']) {
     await ph.getByRole('tab', { name: tab }).click();
     await ph.locator('section.cost').screenshot({ path: `${OUT}iphone-cost-${tab.replace(/\W+/g, '-').toLowerCase()}.png` });

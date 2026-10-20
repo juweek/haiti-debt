@@ -190,6 +190,7 @@ export default function MainChart({ state, year, onYear }) {
   const gaps = gapsFor(state);
   const evActive = new Set(events.filter((e) => e.year === year).map((e) => e.id));
 
+  const tagX = Math.max(20, Math.min(iw - 20, cx));
   return (
     <div ref={ref} className="chart-wrap main-chart">
       <svg ref={svgRef} width={width} height={height} className="chart" aria-hidden="true" data-ml={m.l} data-iw={iw} data-d0={d0} data-d1={d1} data-top={top} data-ph={ph}
@@ -224,7 +225,7 @@ export default function MainChart({ state, year, onYear }) {
                         <text x={sid === 'hist' ? -8 : iw + 6} y={y(v) + 4} textAnchor={sid === 'hist' ? 'end' : 'start'} className="tick" style={{ fontSize: fs.tick }}>{tickFmt(v)}</text>
                       </g>
                     ))}
-                    <text x={sid === 'hist' ? -m.l + 2 : iw + m.r - 2} y={-14} textAnchor={sid === 'hist' ? 'start' : 'end'} className="unit" style={{ fontSize: fs.tick }}>{axes.scales[sid].unit}</text>
+                    <text x={sid === 'hist' ? 4 : iw - 4} y={fs.tick + 2} textAnchor={sid === 'hist' ? 'start' : 'end'} className="unit" style={{ fontSize: fs.tick }}>{axes.scales[sid].unit}</text>
                   </g>
                 );
               })
@@ -236,7 +237,7 @@ export default function MainChart({ state, year, onYear }) {
                     <text x={-8} y={yScales.all(v) + 4} textAnchor="end" className="tick" style={{ fontSize: fs.tick }}>{tickFmt(v)}{i === a.length - 1 && axes.scales.all.unit === '%' ? '%' : ''}</text>
                   </g>
                 ))}
-                {axes.scales.all.unit !== '%' && <text x={-m.l + 2} y={-14} className="unit" style={{ fontSize: fs.tick }}>{axes.scales.all.unit}</text>}
+                {axes.scales.all.unit !== '%' && <text x={4} y={fs.tick + 2} className="unit" style={{ fontSize: fs.tick }}>{axes.scales.all.unit}</text>}
               </g>
             )}
             {/* data */}
@@ -265,7 +266,7 @@ export default function MainChart({ state, year, onYear }) {
               const gw = x(g.x1 + 0.5) - x(g.x0 - 0.5);
               if (gw < 40) return null;
               return (
-                <text key={`l${g.x0}`} x={gx} y={g.soft && !g.wide ? ph * 0.62 : narrow ? 64 : 80} textAnchor="middle" className="gap-label" style={{ fontSize: narrow ? 12 : 15 }}>
+                <text key={`l${g.x0}`} x={gx} y={g.soft && !g.wide ? ph * 0.62 : narrow ? ph * 0.62 : 80} textAnchor="middle" className="gap-label" style={{ fontSize: narrow ? 12 : 15 }}>
                   {g.lines.map((t, i) => <tspan key={t} x={gx} dy={i ? (narrow ? 15 : 19) : 0}>{t}</tspan>)}
                 </text>
               );
@@ -304,11 +305,16 @@ export default function MainChart({ state, year, onYear }) {
             )}
           </g>
           {/* x axis */}
-          {xTicks(d0, d1, narrow).filter((v) => !inDomain || Math.abs(x(v) - cx) > (narrow ? 30 : 36)).map((v) => (
-            <text key={v} x={x(v)} y={top + ph + 19} textAnchor={x(v) > iw - 16 + m.r ? 'end' : x(v) < 16 - m.l ? 'start' : 'middle'} className="tick" style={{ fontSize: fs.tick }}>{v}</text>
-          ))}
+          {xTicks(d0, d1, narrow).map((v) => {
+            const anchor = x(v) > iw - 16 + m.r ? 'end' : x(v) < 16 - m.l ? 'start' : 'middle';
+            // Hide any tick label the cursor's year tag would cover (estimated label extent + 4px gap).
+            const w = String(v).length * fs.tick * 0.62;
+            const l = anchor === 'end' ? x(v) - w : anchor === 'start' ? x(v) : x(v) - w / 2;
+            if (inDomain && l < tagX + 21 + 4 && l + w > tagX - 21 - 4) return null;
+            return <text key={v} x={x(v)} y={top + ph + 19} textAnchor={anchor} className="tick" style={{ fontSize: fs.tick }}>{v}</text>;
+          })}
           {inDomain && (
-            <g transform={`translate(${Math.max(20, Math.min(iw - 20, cx))},${top + ph + 4})`} pointerEvents="none">
+            <g transform={`translate(${tagX},${top + ph + 4})`} pointerEvents="none">
               <rect x={-21} y={0} width={42} height={21} rx={10.5} className="cursor-tag" />
               <text y={15} textAnchor="middle" className="cursor-tag-text">{year}</text>
             </g>

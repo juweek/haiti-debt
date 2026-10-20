@@ -76,7 +76,7 @@ h2 { font: 700 clamp(24px, 6vw, 36px)/1.1 var(--cond); margin: 40px 0 10px; text
 svg.chart { display: block; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: crosshair; overflow: visible; }
 svg.chart text { font-family: var(--sans); }
 .tick, .unit { fill: var(--muted); font-variant-numeric: tabular-nums; }
-.unit { font-weight: 600; }
+.unit { font-weight: 600; paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
 .grid { stroke: var(--grid); stroke-width: 1; }
 .baseline { stroke: var(--ink); stroke-width: 1.5; }
 .gap { fill: var(--grid); opacity: .55; }

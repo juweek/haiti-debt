@@ -299,7 +299,9 @@ export function annotationsFor(state, layers, narrow = false) {
     const pk = peakOf('modern', MOD_START, MOD_END);
     out.push({ kind: 'value', seg: 'modern', year: pk.y, v: pk.v, text: formatValue(pk.v, measure, 'modern'), dx: 0, above: true });
     // On a phone the full-span raw view has no room for a second note beside the 1838 one.
-    if (enabled.has('ven') && !(narrow && measure === 'raw' && segs.length > 1)) {
+    // Full span: on % of GDP the modern band is too short for a note beside its peak label;
+    // on a phone the raw view has no room for it beside the 1838 note.
+    if (enabled.has('ven') && !(segs.length > 1 && (measure === 'pct' || narrow))) {
       out.push({ kind: 'note', seg: 'modern', year: MOD_END, v: top('modern', MOD_END), at: measure === 'raw' ? [era === 'full' ? 2004 : 2015, pk.v * (era === 'full' ? 0.8 : 0.9)] : [2016, Math.max(pk.v * 1.08, top('modern', 2016) * 1.25)], anchor: 'end', lines: ['2024: Venezuela', `forgives $${(F.petrocaribe_2024_forgiven_usd.value / 1e9).toFixed(2)}B`] });
     }
   }
