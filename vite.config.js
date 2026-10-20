@@ -4,7 +4,8 @@ import { resolve } from 'node:path';
 
 // Multi-page build: each HTML file at the root is its own entry.
 export default defineConfig({
-  base: './',
+  // GitHub Pages project site: https://juweek.github.io/haiti-debt/
+  base: '/haiti-debt/',
   plugins: [react()],
   build: {
     rollupOptions: {

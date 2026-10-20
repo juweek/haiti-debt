@@ -60,22 +60,26 @@ export function Controls({ state, set, optionsOpen, setOptionsOpen }) {
   const setSplit = (v) => set({ split: v, ...(!v && measure === 'share' ? { measure: 'pct' } : {}) });
   return (
     <div className="ctl">
-      <div className="ctl-row">
-        <TwoSide left="Debt owed" right="Payments made" label="Show payments made instead of debt owed" on={pay} onChange={(v) => set({ subject: v ? 'pay' : 'debt' })} className="ctl-subject" />
-        <div className="ctl-mu">
-          <Segmented label="Measure" value={measure} onChange={setMeasure}
-            options={Object.entries(MEASURES).map(([value, l]) => ({ value, label: l }))} />
-          <Segmented label="Unit" value={pay ? 'fr' : unit} onChange={setUnit} dim={measure !== 'raw'} className="seg-unit"
-            options={Object.entries(UNITS).map(([value, l]) => ({ value, label: l, disabled: value === 'usd' && pay, title: value === 'usd' && pay ? 'The NYT payment series is in francs only' : undefined }))} />
+      <div className="cbar">
+        <div className="cb-sec cb-show">
+          <span className="cb-label" aria-hidden="true">Show</span>
+          <TwoSide left="Debt owed" right="Payments made" label="Show payments made instead of debt owed" on={pay} onChange={(v) => set({ subject: v ? 'pay' : 'debt' })} />
         </div>
-        <button type="button" className="opt-btn" aria-expanded={optionsOpen} aria-controls={panelId} onClick={() => setOptionsOpen(!optionsOpen)}>
-          <span className="opt-long">More options</span><span className="opt-short">Options</span>
-          <svg width="10" height="7" viewBox="0 0 10 7" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
-        </button>
+        <div className="cb-sec cb-measure">
+          <span className="cb-label" aria-hidden="true">Measure</span>
+          <Segmented label="Measure" value={measure} onChange={setMeasure} className="seg-measure"
+            options={Object.entries(MEASURES).map(([value, l]) => ({ value, label: l }))} />
+        </div>
+        <div className="cb-sec cb-opt">
+          <button type="button" className="opt-btn" aria-expanded={optionsOpen} aria-controls={panelId} onClick={() => setOptionsOpen(!optionsOpen)}>
+            <span className="opt-long">More options</span><span className="opt-short">Options</span>
+            <svg width="10" height="7" viewBox="0 0 10 7" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" /></svg>
+          </button>
+        </div>
       </div>
       <div id={panelId} className="opt-panel" hidden={!optionsOpen}>
         <div className="opt-item">
-          <span className="opt-title" id={`${panelId}-y`}>Years shown</span>
+          <span className="cb-label">Years shown</span>
           <Segmented label="Years shown" value={pay ? 'hist' : era} onChange={setEra}
             options={Object.entries(ERAS).map(([value, o]) => ({
               value, label: o.label,
@@ -84,7 +88,12 @@ export function Controls({ state, set, optionsOpen, setOptionsOpen }) {
             }))} />
         </div>
         <div className="opt-item">
-          <span className="opt-title">Breakdown</span>
+          <span className="cb-label">Unit</span>
+          <Segmented label="Unit" value={pay ? 'fr' : unit} onChange={setUnit} dim={measure !== 'raw'} className="seg-unit"
+            options={Object.entries(UNITS).map(([value, l]) => ({ value, label: l, disabled: value === 'usd' && pay, title: value === 'usd' && pay ? 'The NYT payment series is in francs only' : measure !== 'raw' ? 'Units apply to Amount; choosing one switches Measure to Amount' : undefined }))} />
+        </div>
+        <div className="opt-item">
+          <span className="cb-label">Breakdown</span>
           <Toggle label={pay ? 'Split by what it paid for' : 'Split by creditor'} on={split} onChange={setSplit} />
         </div>
       </div>

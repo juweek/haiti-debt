@@ -6,7 +6,7 @@ import { mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const PORT = 4179;
-const BASE = `http://localhost:${PORT}`;
+const BASE = `http://localhost:${PORT}/haiti-debt`; // vite.config.js base
 const OUT = new URL('../process/', import.meta.url).pathname;
 mkdirSync(OUT, { recursive: true });
 for (const f of readdirSync(OUT)) if (f.endsWith('.png')) unlinkSync(OUT + f);

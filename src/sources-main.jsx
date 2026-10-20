@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import data from './data/explorer.json';
 import Shell from './components/Shell.jsx';
 import CostPanel from './components/CostPanel.jsx';
+import { url } from './paths.js';
 import { francs, dollars, pct } from './format.js';
 import './styles.css';
 
@@ -104,8 +105,8 @@ function Sources() {
 
       <h2 id="download">Download the data</h2>
       <p>
-        <a href="data/haiti-debt-explorer.csv" download>haiti-debt-explorer.csv</a> (one row per year, 1825–1947) ·{' '}
-        <a href="data/haiti-debt-explorer.json" download>haiti-debt-explorer.json</a> (everything on this site, with sources).
+        <a href={url('data/haiti-debt-explorer.csv')} download>haiti-debt-explorer.csv</a> (one row per year, 1825–1947) ·{' '}
+        <a href={url('data/haiti-debt-explorer.json')} download>haiti-debt-explorer.json</a> (everything on this site, with sources).
         NYT-derived data is for non-commercial use with credit to The New York Times.
       </p>
       <p className="muted">Data built {new Date(data.meta.builtAt).toLocaleDateString('en-US', { dateStyle: 'long' })}. World Bank WDI last updated {data.meta.worldBankLastUpdated}; IDS last updated {data.meta.idsLastUpdated}.</p>

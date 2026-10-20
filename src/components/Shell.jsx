@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { LangContext, useT } from '../i18n.js';
+import { url } from '../paths.js';
 
 const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -32,10 +33,10 @@ function Hero({ page, kicker, title, dek }) {
     <header className="hero" ref={hero}>
       <div className="hero-inner" ref={inner}>
         <div className="site-bar">
-          <a className="brand" href="index.html">{t('kicker')}</a>
+          <a className="brand" href={url()}>{t('kicker')}</a>
           <nav aria-label="Pages">
-            <a href="index.html" aria-current={page === 'explorer' ? 'page' : undefined}>{t('navExplorer')}</a>
-            <a href="sources.html" aria-current={page === 'sources' ? 'page' : undefined}>
+            <a href={url()} aria-current={page === 'explorer' ? 'page' : undefined}>{t('navExplorer')}</a>
+            <a href={url('sources.html')} aria-current={page === 'sources' ? 'page' : undefined}>
               <span className="nav-long">{t('navSources')}</span><span className="nav-short">Sources</span>
             </a>
           </nav>
@@ -66,7 +67,7 @@ function Footer() {
   const t = useT();
   return (
     <footer className="site-footer">
-      <p>{t('footer')} <a href="sources.html">{t('navSources')}</a> page.</p>
+      <p>{t('footer')} <a href={url('sources.html')}>{t('navSources')}</a> page.</p>
       <p>The NYT data is used under its non-commercial license, with credit to The New York Times. World Bank data: CC BY 4.0.</p>
     </footer>
   );

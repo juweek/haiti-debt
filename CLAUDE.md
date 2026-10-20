@@ -12,7 +12,7 @@ social-media readers and Haitians / Haitian Americans who want a reliable refere
 - Multi-page Vite build: `vite.config.js` → `build.rollupOptions.input` lists
   `index.html` (explorer) and `sources.html` (sources & method). To add a page,
   add an HTML file at the root, a `src/<name>-main.jsx` entry, and an `input` key.
-- `base: './'` so `dist/` works from any path (GitHub Pages, Netlify, a subfolder).
+- `base: '/haiti-debt/'` for GitHub Pages (https://juweek.github.io/haiti-debt/). Build every runtime link/asset path with `url()` from `src/paths.js`, never a bare `'sources.html'` or `'/img/...'`. `.github/workflows/deploy.yml` builds from committed data (no `data:refresh` in CI); `npm run check:deploy` catches 404s under the subpath.
 - Charts are hand-built SVG in React; d3 only computes scales and paths.
 
 ## Layout

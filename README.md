@@ -23,14 +23,34 @@ shown that isn't traceable to a source in [`data/SOURCES.md`](data/SOURCES.md).
 ```bash
 npm install
 npm run data:refresh   # re-download NYT + World Bank data, rebuild src/data/explorer.json
-npm run dev            # http://localhost:5173
-npm run build          # static site in dist/ (relative paths; host anywhere)
+npm run dev            # http://localhost:5173/haiti-debt/
+npm run build          # static site in dist/, built for the /haiti-debt/ subpath
 npm run shots          # Playwright screenshots → process/ (after build)
+npm run check:deploy   # serve dist/ under /haiti-debt/, fail on any 404 (after build)
 ```
 
 `npm run data:refresh:offline` rebuilds from the vendored copies in `data/raw/`
 without touching the network. You may need `npx playwright install chromium`
 once before `npm run shots`.
+
+## Deploy
+
+The site is published to GitHub Pages at <https://juweek.github.io/haiti-debt/>
+from the `juweek/haiti-debt` repo.
+
+- `vite.config.js` sets `base: '/haiti-debt/'`. Runtime links and asset paths go
+  through `src/paths.js` (`import.meta.env.BASE_URL`), so they work under the subpath.
+  `og:image` and `og:url` are absolute URLs on that host. To host somewhere else,
+  change `base` and the absolute URLs in `index.html` and `sources.html`.
+- `.github/workflows/deploy.yml` runs on every push to `main` (or by hand via
+  *Run workflow*): `npm ci`, `npm run build`, upload `dist/`, deploy with
+  `actions/deploy-pages`. In the repo's Settings → Pages, set **Source** to
+  **GitHub Actions** once.
+- CI never runs `data:refresh`. It builds from the processed data committed in
+  `src/data/explorer.json` and `public/data/`. To update the numbers, run
+  `npm run data:refresh` locally, review the diff, and commit it.
+- Before pushing, `npm run build && npm run check:deploy` loads both pages from
+  `dist/` under `/haiti-debt/` in headless Chrome and fails on any 404.
 
 ## Stack
 

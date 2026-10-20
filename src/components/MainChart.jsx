@@ -23,7 +23,7 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
   const [d0, d1] = domainFor(state);
 
   // ---- layout
-  const fs = narrow ? { tick: 11.5, val: 15, band: 12, area: 12.5 } : { tick: 13, val: 18, band: 14, area: 15 };
+  const fs = narrow ? { tick: 11.5, val: 13, band: 12, area: 12.5 } : { tick: 12.5, val: 13.5, band: 13, area: 14 };
   const m = { l: narrow ? 40 : 48, r: narrow ? 10 : 16, t: 10, b: 30 };
   const iw = width - m.l - m.r;
   const ph = narrow ? 270 : 400;
@@ -31,7 +31,7 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
   const x = useMemo(() => scaleLinear([d0 - 0.5, d1 + 0.5], [0, iw]), [d0, d1, iw]);
   const max = Math.max(0, ...layers.filter((l) => l.kind !== 'line' || l.id !== 'tot').flatMap((l) => l.points.map((p) => p.v1 ?? 0)));
   const y = useMemo(
-    () => (state.measure === 'share' ? scaleLinear([0, 100], [ph, 0]) : scaleLinear([0, (max || 1) * 1.14], [ph, 0]).nice(4)),
+    () => (state.measure === 'share' ? scaleLinear([0, 100], [ph, 0]) : scaleLinear([0, (max || 1) * 1.1], [ph, 0])),
     [state.measure, max, ph],
   );
 
@@ -92,13 +92,32 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
       if (state.measure !== 'share' && v <= 0) cur.text = state.subject === 'pay' ? 'no payment' : formatValue(v, state);
     }
   }
+  // Quiet value label: centred above its dot; beside it when the dot is near the top or an edge.
+  function placeLabel(px, py, w) {
+    let tx = px, anchor = 'middle', ty = py - 9;
+    if (ty - fs.val < 0) { ty = Math.max(fs.val, py + 4); tx = px + 8; anchor = 'start'; }
+    if (anchor === 'middle' && px - w / 2 < 0) { tx = px + 7; anchor = 'start'; ty = py - 5; }
+    if (anchor !== 'end' && (anchor === 'middle' ? px + w / 2 : tx + w) > iw) { tx = px - 7; anchor = 'end'; ty = Math.min(ty, py - 5); }
+    const l = anchor === 'start' ? tx : anchor === 'end' ? tx - w : tx - w / 2;
+    return { tx, ty, anchor, l, r: l + w, t: ty - fs.val, b: ty + 3 };
+  }
   const curBox = (() => {
     if (!cur?.text) return null;
-    const w = cur.text.length * fs.val * 0.56;
-    let tx = cx + 9, anchor = 'start';
-    if (tx + w > iw) { tx = cx - 9; anchor = 'end'; }
-    const ty = Math.max(fs.val + 2, cur.y - 9);
-    return { tx, ty, anchor, l: anchor === 'start' ? tx : tx - w, r: anchor === 'start' ? tx + w : tx, t: ty - fs.val, b: ty + 3 };
+    const w = cur.text.length * fs.val * 0.58;
+    return placeLabel(cx, cur.y, w);
+  })();
+
+  // ---- unit caption ("M francs") in a top corner of the plot: left unless the cursor value
+  // sits there, then right, else omitted (the key above the chart names the unit too)
+  const unit = unitLabel(state);
+  const unitBox = (() => {
+    if (unit === '%') return null;
+    const w = unit.length * fs.tick * 0.56;
+    const hitU = (b) => curBox && curBox.l < b.r + 4 && curBox.r > b.l - 4 && curBox.t < b.b + 2 && curBox.b > b.t - 2;
+    const left = { x: 4, anchor: 'start', l: 2, r: 6 + w, t: 2, b: fs.tick + 5 };
+    if (!hitU(left)) return left;
+    const right = { x: iw - 4, anchor: 'end', l: iw - 6 - w, r: iw - 2, t: 2, b: fs.tick + 5 };
+    return hitU(right) ? null : right;
   })();
 
   // ---- static start/peak labels, dropped when they'd collide with each other or the cursor label
@@ -109,19 +128,16 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
     for (const a of all) {
       if (inDomain && a.year === year) continue;
       const px = x(a.year), py = y(a.v);
-      const w = a.text.length * fs.val * 0.56;
-      let tx = px + 10, anchor = 'start';
-      if (tx + w > iw) { tx = px - 10; anchor = 'end'; }
-      const ty = Math.max(fs.val + 2, py - 8);
-      const box = { l: anchor === 'start' ? tx : tx - w, r: anchor === 'start' ? tx + w : tx, t: ty - fs.val, b: ty + 3 };
-      if (placed.some((o) => hit(o.box, box)) || (curBox && hit(curBox, box))) continue;
+      const w = a.text.length * fs.val * 0.58;
+      const { tx, ty, anchor, ...box } = placeLabel(px, py, w);
+      if (placed.some((o) => hit(o.box, box)) || (curBox && hit(curBox, box)) || (unitBox && hit(unitBox, box))) continue;
       // a start label right next to its segment's peak reads as clutter; keep the peak only
       if (a.kind === 'start' && placed.some((o) => o.seg === a.seg && Math.abs(o.px - px) < (narrow ? 50 : 70))) continue;
       if (inDomain && a.kind === 'start' && Math.abs(cx - px) < 30) continue;
       placed.push({ ...a, px, py, tx, ty, anchor, box });
     }
     return placed;
-  }, [state, layers, x, y, iw, fs.val, inDomain, year, cx, narrow, curBox?.l, curBox?.t]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state, layers, x, y, iw, fs.val, inDomain, year, cx, narrow, curBox?.l, curBox?.t, unitBox?.l]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- band labels inside stacked shares, only where they fit
   const areaLabels = useMemo(() => {
@@ -154,7 +170,6 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
 
   const bands = bandsFor(state);
   const ticks = state.measure === 'share' ? [25, 50, 75, 100] : y.ticks(4).filter((v) => v > 0);
-  const unit = unitLabel(state);
   const tagX = Math.max(20, Math.min(iw - 20, cx));
   const merged = !state.split;
 
@@ -173,7 +188,7 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
               <text x={-8} y={y(v) + 4} textAnchor="end" className="tick" style={{ fontSize: fs.tick }}>{tickFmt(v)}{i === a.length - 1 && unit === '%' ? '%' : ''}</text>
             </g>
           ))}
-          {unit !== '%' && <text x={4} y={fs.tick + 2} className="unit" style={{ fontSize: fs.tick }}>{unit}</text>}
+          {unitBox && <text x={unitBox.x} y={fs.tick + 2} textAnchor={unitBox.anchor} className="unit" style={{ fontSize: fs.tick }}>{unit}</text>}
 
           {geo.map((l) => {
             const s = SERIES[l.id];
@@ -204,12 +219,14 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
             const longest = Math.max(0, ...g.lines.map((t) => t.length));
             if (!g.lines.length || gw < longest * fs.band * 0.55 + 8) return null;
             // skip the band text if the cursor value or a value label would sit on it
-            const bwid = longest * fs.band * 0.55, by0 = ph * 0.42 - fs.band, by1 = by0 + g.lines.length * fs.band * 1.3 + 4;
-            const bb = { l: gx - bwid / 2, r: gx + bwid / 2, t: by0, b: by1 };
+            const bwid = longest * fs.band * 0.55, bh = g.lines.length * fs.band * 1.3 + 4;
+            const bb = { l: gx - bwid / 2, r: gx + bwid / 2, t: 12, b: 12 + bh };
             const hitB = (o) => o && o.l < bb.r + 4 && o.r > bb.l - 4 && o.t < bb.b && o.b > bb.t;
+            // near the top of the band, but under the unit caption when they share a corner
+            if (hitB(unitBox)) { bb.t = unitBox.b + 6; bb.b = bb.t + bh; }
             if (hitB(curBox) || labels.some((a) => hitB(a.box))) return null;
             return (
-              <text key={`l${g.x0}`} x={gx} y={ph * 0.42} textAnchor="middle" className={g.hint ? 'gap-label gap-hint' : 'gap-label'} style={{ fontSize: fs.band }}>
+              <text key={`l${g.x0}`} x={gx} y={bb.t + fs.band} textAnchor="middle" className={g.hint ? 'gap-label gap-hint' : 'gap-label'} style={{ fontSize: fs.band }}>
                 {g.lines.map((t, i) => <tspan key={t} x={gx} dy={i ? fs.band * 1.3 : 0}>{t}</tspan>)}
               </text>
             );
@@ -223,7 +240,7 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
           ))}
           {labels.map((a) => (
             <g key={`${a.seg}${a.kind}`}>
-              <circle cx={a.px} cy={a.py} r={narrow ? 4 : 5} className="val-dot" />
+              <circle cx={a.px} cy={a.py} r={narrow ? 3.5 : 4} className="val-dot" />
               <text x={a.tx} y={a.ty} textAnchor={a.anchor} className="val-label" style={{ fontSize: fs.val }}>{a.text}</text>
             </g>
           ))}
@@ -231,7 +248,7 @@ export default function MainChart({ state, viewKey, year, onYear, onInteract }) 
           {inDomain && (
             <g className="cursor" pointerEvents="none">
               <line x1={cx} x2={cx} y1={0} y2={ph} />
-              {cur && state.measure !== 'share' && <circle cx={cx} cy={cur.y} r={narrow ? 4.5 : 5.5} className="cursor-dot" />}
+              {cur && state.measure !== 'share' && <circle cx={cx} cy={cur.y} r={narrow ? 4 : 4.5} className="cursor-dot" />}
               {curBox && <text x={curBox.tx} y={curBox.ty} textAnchor={curBox.anchor} className="val-label cursor-value" style={{ fontSize: fs.val }}>{cur.text}</text>}
             </g>
           )}

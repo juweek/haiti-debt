@@ -110,15 +110,15 @@ export function bandsFor(state) {
     add(PAY_END + 1, 1947, ['Double debt paid', 'off in 1888. No', 'payment series', 'after that'], true);
     return out;
   }
-  if (measure === 'pct') add(HIST_END + 1, MOD_START - 1, ['No GDP', 'estimates']);
+  if (measure === 'pct') add(HIST_END + 1, MOD_START - 1, ['No GDP', 'estimates,', `${HIST_END + 1}–${MOD_START - 1}`]);
   else if (measure === 'share') add(1825, MOD_START - 1, ['No creditor', 'split before', '1970'], true);
   else if (unit === 'fr') {
     add(HIST_END + 1, RECV[1], [], true, 'usd');
-    add(RECV[1] + 1, MOD_START - 1, ['No annual', 'debt series']);
+    add(RECV[1] + 1, MOD_START - 1, ['No annual', 'debt series,', `${RECV[1] + 1}–${MOD_START - 1}`]);
     add(MOD_START, MOD_END, ['Recorded in US$.', 'Switch unit', 'to see it'], true, 'usd');
   } else {
     add(1825, RECV[0] - 1, ['Recorded in', 'francs. Switch', 'unit to see it'], true, 'fr');
-    add(RECV[1] + 1, MOD_START - 1, ['No annual', 'debt series']);
+    add(RECV[1] + 1, MOD_START - 1, ['No annual', 'debt series,', `${RECV[1] + 1}–${MOD_START - 1}`]);
   }
   return out;
 }
