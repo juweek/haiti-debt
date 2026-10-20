@@ -62,11 +62,9 @@ export function Controls({ state, set, optionsOpen, setOptionsOpen }) {
     <div className="ctl">
       <div className="cbar">
         <div className="cb-sec cb-show">
-          <span className="cb-label" aria-hidden="true">Show</span>
           <TwoSide left="Debt owed" right="Payments made" label="Show payments made instead of debt owed" on={pay} onChange={(v) => set({ subject: v ? 'pay' : 'debt' })} />
         </div>
         <div className="cb-sec cb-measure">
-          <span className="cb-label" aria-hidden="true">Measure</span>
           <Segmented label="Measure" value={measure} onChange={setMeasure} className="seg-measure"
             options={Object.entries(MEASURES).map(([value, l]) => ({ value, label: l }))} />
         </div>
